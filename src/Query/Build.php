@@ -42,7 +42,7 @@ class Build
 
     public function reverse()
     {
-        return $this->option('ScanIndexForward', $value);
+        return $this->option('ScanIndexForward', false);
     }
 
     public function filter($field, $operator, $value)
