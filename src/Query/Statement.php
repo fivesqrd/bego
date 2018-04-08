@@ -8,9 +8,12 @@ class Statement
 
     protected $_client;
 
-    public function __construct($cliemt, $options)
+    protected $_marshaler;
+
+    public function __construct($client, $marshaler, $options)
     {
         $this->_client = $client;
+        $this->_marshaler = $marshaler;
         $this->_options = $options;
     }
 
@@ -25,7 +28,7 @@ class Statement
             $options['ExclusiveStartKey'] = $result['LastEvaluatedKey'];
 
             foreach ($result['Items'] as $item) {
-                $collection[] = $marshaler->unmarshalItem($item);
+                $collection[] = $this->_marshaler->unmarshalItem($item);
             }
         }
 
@@ -43,21 +46,23 @@ class Statement
             $options['ExclusiveStartKey'] = $result['LastEvaluatedKey'];
 
             foreach ($result['Items'] as $item) {
-                $collection[] = $marshaler->unmarshalItem($item);
+                $collection[] = $this->_marshaler->unmarshalItem($item);
             }
         }
 
         return $collection;
     }
 
-    public function page()
+    public function fetch()
     {
+        print_r($this->_options);
+        
         $result = $this->_client->query($this->_options);
 
         $collection = array();
 
         foreach ($result['Items'] as $item) {
-            $collection[] = $marshaler->unmarshalItem($item);
+            $collection[] = $this->_marshaler->unmarshalItem($item);
         }
 
         return $collection;

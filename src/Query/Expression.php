@@ -1,6 +1,6 @@
 <?php
 
-namespace Bego\Database\Query;
+namespace Bego\Query;
 
 /**
  * key condition expression
@@ -22,36 +22,41 @@ class Expression
         }
     }
 
+    public function isDirty()
+    {
+        return count($this->_values) > 0;
+    }
+
     public function add($field, $operator, $value)
     {
         $name = '#' . $field;
         $placeholder = ':' . $field;
 
-        array_push($this->_names, [$name => $field]);
+        if (array_key_exists($placeholder, $this->_values)) {
+            throw new \Exception("{$field} cannot be used twice");
+        }
+
+        $this->_names[$name] = $field;
 
         array_push($this->_statements, "{$name} {$operator} {$placeholder}");
 
-        array_push($this->_values, [$placeholder => $value]);
+        $this->_values[$placeholder] = $value;
 
         return $this;
     }
 
     public function values()
     {
-        return [
-            ':n'    => $script->getName(),
-            ':t'    => date('Y-m-d H:i:s', $time)
-        ];
+        return $this->_values;
     }
 
     public function names()
     {
-        return ['#Name' => 'Name', '#Timestamp' => 'Timestamp'];
+        return $this->_names;
     }
 
     public function statement()
     {
-        //return implode(' and ', $this->_expression);
-        return  '#Name = :n and #Timestamp >= :t';
+        return implode(' and ', $this->_statements);
     }
 }

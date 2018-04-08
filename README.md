@@ -18,7 +18,7 @@ $name      = 'Test';
 $server    = 'Web-Server-1';
 $date      = date('Y-m-d H:i:s', $time);
 
-$query = Bego\Query::create($client)
+$query = Bego\Query::create($client, new Aws\DynamoDb\Marshaler())
     ->table('Logs')
     ->condition('Timestamp', '>=', $date)
     ->filter('Server', '=', $server);
@@ -36,7 +36,7 @@ foreach ($results as $item) {
 
 ## Combining all steps into one chain ##
 ```
-$results = Bego\Query::create($client)
+$results = Bego\Query::create($client, $marshaler)
     ->table('Logs')
     ->condition('Timestamp', '>=', $date)
     ->condition('Name', '=', $name)
@@ -48,7 +48,7 @@ $results = Bego\Query::create($client)
 ## Key condition and filter expressions ##
 Multiple key condition / filter expressions can be added. DynamoDb applies key conditions to the query but filters are applied to the query results
 ```
-$results = Bego\Query::create($client)
+$results = Bego\Query::create($client, $marshaler)
     ->table('Logs')
     ->condition('Timestamp', '>=', $date)
     ->condition('Name', '=', $name)
@@ -60,7 +60,7 @@ $results = Bego\Query::create($client)
 ## Descending Order ##
 DynamoDb always sorts results by the sort key value in ascending order. Getting results in descending order can be done using the reverse() flag:
 ```
-$statement = Bego\Query::create($client)
+$statement = Bego\Query::create($client, $marshaler)
     ->table('Logs')
     ->reverse()
     ->condition('Timestamp', '>=', $date)
@@ -71,7 +71,7 @@ $statement = Bego\Query::create($client)
 
 ## Indexes ##
 ```
-$results = Bego\Query::create($client)
+$results = Bego\Query::create($client, $marshaler)
     ->table('Logs')
     ->index('Name-Timestamp-Index')
     ->condition('Timestamp', '>=', $date)
@@ -84,7 +84,7 @@ $results = Bego\Query::create($client)
 ## Paginating ##
 DynanmoDb limits the results to 1MB. Therefor, pagination has to be implemented to traverse beyond the first page. There are two options available to do the pagination work: fetchAll() or fetchMany()
 ```
-$statement = Bego\Query::create($client)
+$statement = Bego\Query::create($client, $marshaler)
     ->table('Logs')
     ->condition('Timestamp', '>=', $date)
     ->condition('Name', '=', $name)

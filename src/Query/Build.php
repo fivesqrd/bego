@@ -13,14 +13,19 @@ class Build
 
     protected $_conditions = [];
 
-    public static function create($client)
+    protected $_client;
+
+    protected $_marshaler;
+
+    public static function create($client, $marshaler)
     {
-        return new self($client);
+        return new self($client, $marshaler);
     }
 
-    public function __construct($client)
+    public function __construct($client, $marshaler)
     {
         $this->_client = $client;
+        $this->_marshaler = $marshaler;
     }
 
     public function option($key, $value)
@@ -67,15 +72,15 @@ class Build
         return $this;
     }
 
-    public function options()
+    public function compile()
     {
         $options = [];
 
-        $conditions = new Query\Expression($this->_conditions);
-        $filters    = new Query\Expression($this->_filters);
+        $conditions = new Expression($this->_conditions);
+        $filters    = new Expression($this->_filters);
 
         if ($conditions->isDirty()) {
-            $options['KeyConditionExpression'] = $conditions->statenent();
+            $options['KeyConditionExpression'] = $conditions->statement();
         }
 
         if ($filters->isDirty()) {
@@ -87,10 +92,10 @@ class Build
         );
 
         $values = array_merge(
-            $filters->names(), $conditions->names()
+            $filters->values(), $conditions->values()
         );
 
-        $options['ExpressionAttributeValues'] = $marshaler->marshalJson(
+        $options['ExpressionAttributeValues'] = $this->_marshaler->marshalJson(
             json_encode($values)
         );
 
@@ -99,6 +104,8 @@ class Build
 
     public function prepare()
     {
-        return new Query\Statement($this->_client, $this->options());
+        return new Statement(
+            $this->_client, $this->_marshaler, $this->compile()
+        );
     }
 }
