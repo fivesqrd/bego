@@ -44,7 +44,6 @@ $results = Bego\Query::create()
     ->filter('Server', '=', $server)
     ->prepare($client)
     ->fetch(); 
-
 ```
 
 ## Combining steps into one chain ##
@@ -56,7 +55,6 @@ $results = Bego\Query::create()
     ->filter('Server', '=', $server)
     ->prepare($client)
     ->fetch(); 
-
 ```
 
 ## Descending Order ##
