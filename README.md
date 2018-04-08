@@ -23,7 +23,7 @@ $query = Bego\Query::create($client)
     ->condition('Timestamp', '>=', $date)
     ->filter('Server', '=', $server);
 
-/* Compile all options into one request */
+/* Compile all query options into one request */
 $statement = $query->prepare();
 
 /* Execute result and return first page of results */
