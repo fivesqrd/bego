@@ -60,8 +60,9 @@ class Statement
         $options = $this->_options;
         $collection = array();
         $result = array();
+        $i = 0;
 
-        while (count($collection) < $limit && isset($result['LastEvaluatedKey'])) {
+        while ($i == 0 || (count($collection) < $limit && isset($result['LastEvaluatedKey']))) {
             $result = $this->_client->query($options);
             $options['ExclusiveStartKey'] = $result['LastEvaluatedKey'];
 
