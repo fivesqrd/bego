@@ -18,13 +18,13 @@ $name      = 'Test';
 $server    = 'Web-Server-1';
 $date      = date('Y-m-d H:i:s', $time);
 
-$query = Bego\Query::create()
+$query = Bego\Query::create($client)
     ->table('Logs')
     ->condition('Timestamp', '>=', $date)
     ->filter('Server', '=', $server);
 
 /* Compile all options into one request */
-$statement = $query->prepare($client);
+$statement = $query->prepare();
 
 /* Execute result and return first page of results */
 $results = $statement->fetch(); 
@@ -37,59 +37,59 @@ foreach ($results as $item) {
 ## Key condition and filter expressions ##
 Multiple key condition / filter expressions can be added. DynamoDb applies key conditions to the query but filters are applied to the query results
 ```
-$results = Bego\Query::create()
+$results = Bego\Query::create($client)
     ->table('Logs')
     ->condition('Timestamp', '>=', $date)
     ->condition('Name', '=', $name)
     ->filter('Server', '=', $server)
-    ->prepare($client)
+    ->prepare()
     ->fetch(); 
 ```
 
 ## Combining steps into one chain ##
 ```
-$results = Bego\Query::create()
+$results = Bego\Query::create($client)
     ->table('Logs')
     ->condition('Timestamp', '>=', $date)
     ->condition('Name', '=', $name)
     ->filter('Server', '=', $server)
-    ->prepare($client)
+    ->prepare()
     ->fetch(); 
 ```
 
 ## Descending Order ##
 DynamoDb always sorts results by the sort key value in ascending order. Getting results in descending order can be done using the reverse() flag:
 ```
-$statement = Bego\Query::create()
+$statement = Bego\Query::create($client)
     ->table('Logs')
     ->reverse()
     ->condition('Timestamp', '>=', $date)
     ->condition('Name', '=', $name)
     ->filter('Server', '=', $server)
-    ->prepare($client);
+    ->prepare();
 ```
 
 ## Indexes ##
 ```
-$results = Bego\Query::create()
+$results = Bego\Query::create($client)
     ->table('Logs')
     ->index('Name-Timestamp-Index')
     ->condition('Timestamp', '>=', $date)
     ->condition('Name', '=', $name)
     ->filter('Server', '=', $server)
-    ->prepare($client)
+    ->prepare()
     ->fetch();
 ```
 
 ## Paginating ##
 DynanmoDb limits the results to 1MB. Therefor, pagination has to be implemented to traverse beyond the first page. There are two options available to do the pagination work: fetchAll() or fetchMany()
 ```
-$statement = Bego\Query::create()
+$statement = Bego\Query::create($client)
     ->table('Logs')
     ->condition('Timestamp', '>=', $date)
     ->condition('Name', '=', $name)
     ->filter('Server', '=', $server)
-    ->prepare($client);
+    ->prepare();
 
 /* Get all items no matter the cost */
 $results = $statement->fetchAll();

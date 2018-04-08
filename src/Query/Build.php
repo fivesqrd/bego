@@ -97,8 +97,8 @@ class Build
         return array_merge($this->_options, $options);
     }
 
-    public function prepare($client)
+    public function prepare()
     {
-        return new Query\Statement($client, $this->options());
+        return new Query\Statement($this->_client, $this->options());
     }
 }
