@@ -34,8 +34,7 @@ foreach ($results as $item) {
 }
 ```
 
-## Key condition and filter expressions ##
-Multiple key condition / filter expressions can be added. DynamoDb applies key conditions to the query but filters are applied to the query results
+## Combining all steps into one chain ##
 ```
 $results = Bego\Query::create($client)
     ->table('Logs')
@@ -46,7 +45,8 @@ $results = Bego\Query::create($client)
     ->fetch(); 
 ```
 
-## Combining steps into one chain ##
+## Key condition and filter expressions ##
+Multiple key condition / filter expressions can be added. DynamoDb applies key conditions to the query but filters are applied to the query results
 ```
 $results = Bego\Query::create($client)
     ->table('Logs')
