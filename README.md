@@ -37,7 +37,7 @@ foreach ($results as $item) {
 ```
 
 
-## Combining steps into one query ##
+## Combining steps into one chain ##
 ```
 $results = Bego\Query::create()
     ->table('Logs')
