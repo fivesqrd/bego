@@ -21,7 +21,6 @@ $date      = date('Y-m-d H:i:s', $time);
 $query = Bego\Query::create()
     ->table('Logs')
     ->condition('Timestamp', '>=', $date)
-    ->condition('Name', '=', $name)
     ->filter('Server', '=', $server);
 
 /* Compile all options into one request */
@@ -35,6 +34,18 @@ foreach ($results as $item) {
 }
 ```
 
+## Key condition and filter expressions ##
+Multiple key condition / filter expressions can be added. DynamoDb applies key conditions to the query but filters are applied to the query results
+```
+$results = Bego\Query::create()
+    ->table('Logs')
+    ->condition('Timestamp', '>=', $date)
+    ->condition('Name', '=', $name)
+    ->filter('Server', '=', $server)
+    ->prepare($client)
+    ->fetch(); 
+
+```
 
 ## Combining steps into one chain ##
 ```
