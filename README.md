@@ -20,7 +20,6 @@ $date      = date('Y-m-d H:i:s', $time);
 
 $query = Bego\Query::create()
     ->table('Logs')
-    ->index('Name-Timestamp-Index')
     ->condition('Timestamp', '>=', $date)
     ->condition('Name', '=', $name)
     ->filter('Server', '=', $server);
@@ -41,7 +40,6 @@ foreach ($results as $item) {
 ```
 $results = Bego\Query::create()
     ->table('Logs')
-    ->index('Name-Timestamp-Index')
     ->condition('Timestamp', '>=', $date)
     ->condition('Name', '=', $name)
     ->filter('Server', '=', $server)
@@ -55,7 +53,6 @@ DynamoDb always sorts results by the sort key value in ascending order. Getting 
 ```
 $statement = Bego\Query::create()
     ->table('Logs')
-    ->index('Name-Timestamp-Index')
     ->reverse()
     ->condition('Timestamp', '>=', $date)
     ->condition('Name', '=', $name)
@@ -63,12 +60,23 @@ $statement = Bego\Query::create()
     ->prepare($client);
 ```
 
+## Indexes ##
+```
+$results = Bego\Query::create()
+    ->table('Logs')
+    ->index('Name-Timestamp-Index')
+    ->condition('Timestamp', '>=', $date)
+    ->condition('Name', '=', $name)
+    ->filter('Server', '=', $server)
+    ->prepare($client)
+    ->fetch();
+```
+
 ## Paginating ##
 DynanmoDb limits the results to 1MB. Therefor, pagination has to be implemented to traverse beyond the first page. There are two options available to do the pagination work: fetchAll() or fetchMany()
 ```
 $statement = Bego\Query::create()
     ->table('Logs')
-    ->index('Name-Timestamp-Index')
     ->condition('Timestamp', '>=', $date)
     ->condition('Name', '=', $name)
     ->filter('Server', '=', $server)
