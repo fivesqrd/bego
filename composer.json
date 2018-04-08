@@ -1,0 +1,19 @@
+{
+	"name": "fivesqrd/bego",
+	"description": "Simple Document Mapper Library",
+	"require": {
+    },
+    "autoload": {
+        "psr-4": {
+            "Bego": "src/"
+        }
+    },
+    "license": ["BSD License"],
+    "authors": [
+        {
+            "name": "Christian Burger",
+            "email": "christian@fivesqrd.com",
+            "role": "Developer"
+        }
+    ]
+}
