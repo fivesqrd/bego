@@ -18,6 +18,27 @@ $name      = 'Test';
 $server    = 'Web-Server-1';
 $date      = date('Y-m-d H:i:s', $time);
 
+$query = Bego\Query::create()
+    ->table('Logs')
+    ->index('Name-Timestamp-Index')
+    ->condition('Timestamp', '>=', $date)
+    ->condition('Name', '=', $name)
+    ->filter('Server', '=', $server);
+
+/* Compile all options into one request */
+$statement = $query->prepare($client);
+
+/* Execute result and return first page of results */
+$results = $statement->fetch(); 
+
+foreach ($results as $item) {
+    echo "{$item['Id']}\n";
+}
+```
+
+
+## Combining steps into one query ##
+```
 $results = Bego\Query::create()
     ->table('Logs')
     ->index('Name-Timestamp-Index')
@@ -27,9 +48,6 @@ $results = Bego\Query::create()
     ->prepare($client)
     ->fetch(); 
 
-foreach ($results as $item) {
-    echo "{$item['Id']}\n";
-}
 ```
 
 ## Descending Order ##
@@ -46,7 +64,7 @@ $statement = Bego\Query::create()
 ```
 
 ## Paginating ##
-DynanmoDb limits the results return to 1MB. Therefor, pagination has to be implemented to traverse beyond the first page. There are two options available for paginating results: fetchAll() or fetchMany()
+DynanmoDb limits the results to 1MB. Therefor, pagination has to be implemented to traverse beyond the first page. There are two options available to do the pagination work: fetchAll() or fetchMany()
 ```
 $statement = Bego\Query::create()
     ->table('Logs')
