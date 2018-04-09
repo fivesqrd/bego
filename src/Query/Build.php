@@ -55,6 +55,16 @@ class Build
         return $this->option('ScanIndexForward', ($flag === true));
     }
 
+    public function consumption($flag = true)
+    {
+        return $this->option('ReturnConsumedCapacity', ($flag === true) ? 'TOTAL' : 'NONE');
+    }
+
+    public function limit($value)
+    {
+        return $this->option('Limit', $value);
+    }
+
     public function filter($field, $operator, $value)
     {
         array_push($this->_filters, [

@@ -2,6 +2,7 @@
 
 Bego is a library for making DynamoDb queries simpler to work with
 
+You can Query any DynamoDb table or secondary index, provided that it has a composite primary key (partition key and sort key)
 ## Example ##
 ```
 $client = new Aws\DynamoDb\DynamoDbClient([
@@ -93,13 +94,24 @@ $statement = Bego\Query::create($client, $marshaler)
     ->prepare();
 ```
 
+## Limiting Results ##
+DynamoDb allows you to limit the number of items returned in the result. Note that this limit is applied to the key conidtion only. DynamoDb will apply filters on the limit resultset:
+```
+$statement = Bego\Query::create($client, $marshaler)
+    ->table('Logs')
+    ->consistent()
+    ->condition('Timestamp', '>=', $date)
+    ->filter('User', '=', $User)
+    ->limit(100)
+    ->prepare();
+```
+
 ## Paginating ##
 DynanmoDb limits the results to 1MB. Therefor, pagination has to be implemented to traverse beyond the first page. There are two options available to do the pagination work: fetchAll() or fetchMany()
 ```
 $statement = Bego\Query::create($client, $marshaler)
     ->table('Logs')
     ->condition('Timestamp', '>=', $date)
-    ->condition('Name', '=', $name)
     ->filter('User', '=', $User)
     ->prepare();
 
@@ -108,4 +120,15 @@ $results = $statement->fetchAll();
 
 /* Execute as many calls as is required to get 1000 items */
 $results = $statement->fetchMany(1000); 
+```
+
+## Capacity Units Consumed ##
+DynamoDb can calculate the total number of read capacity units for every query. This can be enabled using the consumption() flag:
+```
+$statement = Bego\Query::create($client, $marshaler)
+    ->table('Logs')
+    ->consumption()
+    ->condition('Timestamp', '>=', $date)
+    ->filter('User', '=', $User)
+    ->prepare();
 ```
