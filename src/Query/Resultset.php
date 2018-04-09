@@ -32,21 +32,23 @@ class Resultset implements \Iterator, \Countable
 
     public function next()
     {
-        $item = $this->getItem($this->_pointer);
+        $item = $this->item($this->_pointer);
+
         if ($item) {
             $this->_pointer++;
         }
+        
         return $item;
     }
 
     public function first()
     {
-        return $this->getItem(0);
+        return $this->item(0);
     }
 
     public function last()
     {
-        return $this->getItem(
+        return $this->item(
             $this->count() - 1
         );
     }
@@ -58,7 +60,7 @@ class Resultset implements \Iterator, \Countable
 
     public function current()
     {
-        return $this->getItem($this->_pointer);
+        return $this->item($this->_pointer);
     }
 
     public function count()
@@ -66,15 +68,15 @@ class Resultset implements \Iterator, \Countable
         return count($this->_result['Items']);
     }
 
-    public function getItem($index)
+    public function item($index)
     {
         if (!array_key_exists($index, $this->_result['Items'])) {
             return null;
         }
 
-        $item = $this->_result['Items'][$index];
-
-        return $this->_marshaler->unmarshalItem($item);
+        return $this->_marshaler->unmarshalItem(
+            $this->_result['Items'][$index]
+        );
     }
 
     public function param($key, $default = null)

@@ -24,12 +24,35 @@ $query = Bego\Query::create($client, new Aws\DynamoDb\Marshaler())
     ->condition('Timestamp', '>=', $date)
     ->filter('User', '=', $User);
 
-/* Execute result and return first page of results */
+/* Execute query and return first page of results */
 $results = $query->fetch(); 
 
 foreach ($results as $item) {
     echo "{$item['Id']}\n";
 }
+
+```
+
+
+## Working with result sets ##
+The result set object implements the Iterator interface and canned by used straight way. It provived some handy methods as well.
+```
+/* Execute query and return first page of results */
+$results = $query->fetch(); 
+
+foreach ($results as $item) {
+    echo "{$item['Id']}\n";
+}
+
+echo "{$results->count()} items in result set\n";
+echo "{$results->getScannedCount()} items scanned in query\n";
+
+print_r($results->first());
+
+print_r($results->last());
+
+printr_($results->item(3)); //3rd item
+
 ```
 
 ## Combining all steps into one chain ##
