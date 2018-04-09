@@ -1,11 +1,13 @@
 # Bego
 
-Bego is a library for making DynamoDb queries simpler to work with
+Bego is a library for making DynamoDb queries simpler to work with.
 
 You can Query any DynamoDb table or secondary index, provided that it has a composite primary key (partition key and sort key)
 ## Example ##
 ```
-$client = new Aws\DynamoDb\DynamoDbClient([
+use Aws\DynamoDb as Dynamo;
+
+$config = [
     'version' => 'latest',
     'region'  => 'eu-west-1',
     'credentials' => [
@@ -16,13 +18,13 @@ $client = new Aws\DynamoDb\DynamoDbClient([
 
 $time      = strtotime('-24 hours');
 $name      = 'Test';
-$User    = 'Web-User-1';
+$user      = 'Web-User-1';
 $date      = date('Y-m-d H:i:s', $time);
 
-$query = Bego\Query::create($client, new Aws\DynamoDb\Marshaler())
+$query = Bego\Query::create(new Dynamo\DynamoDbClient($config), new Dynamo\Marshaler())
     ->table('Logs')
     ->condition('Timestamp', '>=', $date)
-    ->filter('User', '=', $User);
+    ->filter('User', '=', $user);
 
 /* Execute query and return first page of results */
 $results = $query->fetch(); 
@@ -61,7 +63,7 @@ $results = Bego\Query::create($client, $marshaler)
     ->table('Logs')
     ->condition('Timestamp', '>=', $date)
     ->condition('Name', '=', $name)
-    ->filter('User', '=', $User)
+    ->filter('User', '=', $user)
     ->fetch(); 
 ```
 
@@ -72,7 +74,7 @@ $results = Bego\Query::create($client, $marshaler)
     ->table('Logs')
     ->condition('Timestamp', '>=', $date)
     ->condition('Name', '=', $name)
-    ->filter('User', '=', $User)
+    ->filter('User', '=', $user)
     ->fetch(); 
 ```
 
@@ -84,7 +86,7 @@ $results = Bego\Query::create($client, $marshaler)
     ->reverse()
     ->condition('Timestamp', '>=', $date)
     ->condition('Name', '=', $name)
-    ->filter('User', '=', $User)
+    ->filter('User', '=', $user)
     ->fetch();
 ```
 
@@ -95,7 +97,7 @@ $results = Bego\Query::create($client, $marshaler)
     ->index('Name-Timestamp-Index')
     ->condition('Timestamp', '>=', $date)
     ->condition('Name', '=', $name)
-    ->filter('User', '=', $User)
+    ->filter('User', '=', $user)
     ->fetch();
 ```
 
@@ -107,7 +109,7 @@ $results = Bego\Query::create($client, $marshaler)
     ->consistent()
     ->condition('Timestamp', '>=', $date)
     ->condition('Name', '=', $name)
-    ->filter('User', '=', $User)
+    ->filter('User', '=', $user)
     ->fetch();
 ```
 
@@ -118,7 +120,7 @@ $results = Bego\Query::create($client, $marshaler)
     ->table('Logs')
     ->consistent()
     ->condition('Timestamp', '>=', $date)
-    ->filter('User', '=', $User)
+    ->filter('User', '=', $user)
     ->limit(100)
     ->fetch();
 ```
@@ -129,7 +131,7 @@ DynanmoDb limits the results to 1MB. Therefor, pagination has to be implemented 
 $query = Bego\Query::create($client, $marshaler)
     ->table('Logs')
     ->condition('Timestamp', '>=', $date)
-    ->filter('User', '=', $User);
+    ->filter('User', '=', $user);
 
 /* Option 1: Get all items no matter the cost */
 $results = $query->fetch(false);
@@ -144,7 +146,7 @@ In some cases one may want to paginate accross multiple hops;
 $query = Bego\Query::create($client, $marshaler)
     ->table('Logs')
     ->condition('Timestamp', '>=', $date)
-    ->filter('User', '=', $User);
+    ->filter('User', '=', $user);
 
 /* First Hop: Get one page */
 $results = $query->fetch(1);
@@ -162,7 +164,7 @@ $results = Bego\Query::create($client, $marshaler)
     ->table('Logs')
     ->consumption()
     ->condition('Timestamp', '>=', $date)
-    ->filter('User', '=', $User)
+    ->filter('User', '=', $user)
     ->fetch();
 
 echo $results->getCapacityUnitsConsumed();
