@@ -4,94 +4,132 @@ namespace Bego\Query;
 
 class Statement
 {
-    protected $_options;
+    protected $_options = [
+        'TableName'         => null,
+        'ScanIndexForward'  => true,
+    ];
+
+    protected $_filters = [];
+
+    protected $_conditions = [];
 
     protected $_client;
 
     protected $_marshaler;
 
-    protected $_trips = 0;
+    public static function create($client, $marshaler)
+    {
+        return new self($client, $marshaler);
+    }
 
-    protected $_pointer;
-
-    public function __construct($client, $marshaler, $options)
+    public function __construct($client, $marshaler)
     {
         $this->_client = $client;
         $this->_marshaler = $marshaler;
-        $this->_options = $options;
     }
 
-    public function fetchAll()
+    public function option($key, $value)
     {
-        $options = $this->_options;
-        $collection = array();
-        $result = array();
-        $i = 0;
+        $this->_options[$key] = $value;
 
-        while ($i == 0 || isset($result['LastEvaluatedKey'])) {
-            $result = $this->_client->query($options);
-            $options['ExclusiveStartKey'] = $result['LastEvaluatedKey'];
+        return $this;
+    }
 
-            foreach ($result['Items'] as $item) {
-                $collection[] = $this->_marshaler->unmarshalItem($item);
-            }
+    public function table($value)
+    {
+        return $this->option('TableName', $value);
+    }
 
-            $i++;
-            $this->_pointer = $result['LastEvaluatedKey'];
+    public function index($value)
+    {
+        return $this->option('IndexName', $value);
+    }
+
+    public function consistent($flag = true)
+    {
+        return $this->option('ConsistentRead', ($flag === true));
+    }
+
+    public function reverse($flag = true)
+    {
+        return $this->option('ScanIndexForward', ($flag === true));
+    }
+
+    public function consumption($flag = true)
+    {
+        return $this->option('ReturnConsumedCapacity', ($flag === true) ? 'TOTAL' : 'NONE');
+    }
+
+    public function limit($value)
+    {
+        return $this->option('Limit', $value);
+    }
+
+    public function offset($value)
+    {
+        return $this->option('ExclusiveStartKey', $value);
+    }
+
+    public function filter($field, $operator, $value)
+    {
+        array_push($this->_filters, [
+            'field'    => $field,
+            'operator' => $operator,
+            'value'    => $value
+        ]);
+
+        return $this;
+    }
+
+    public function condition($field, $operator, $value)
+    {
+        array_push($this->_conditions, [
+            'field'    => $field,
+            'operator' => $operator,
+            'value'    => $value
+        ]);
+        
+        return $this;
+    }
+
+    public function compile()
+    {
+        $options = [];
+
+        $conditions = new Expression($this->_conditions);
+        $filters    = new Expression($this->_filters);
+
+        if ($conditions->isDirty()) {
+            $options['KeyConditionExpression'] = $conditions->statement();
         }
 
-        $this->_trips = $i;
-
-        return $collection;
-    }
-
-    public function getLastTripCount()
-    {
-        return $this->_trips;
-    }
-
-    public function getLastEvaluatedKey()
-    {
-        return $this->_pointer;
-    }
-
-    public function fetchMany($limit)
-    {
-        $options = $this->_options;
-        $collection = array();
-        $result = array();
-        $i = 0;
-
-        while ($i == 0 || (count($collection) < $limit && isset($result['LastEvaluatedKey']))) {
-            $result = $this->_client->query($options);
-            $options['ExclusiveStartKey'] = $result['LastEvaluatedKey'];
-
-            foreach ($result['Items'] as $item) {
-                $collection[] = $this->_marshaler->unmarshalItem($item);
-            }
-
-            $i++;
-            $this->_pointer = $result['LastEvaluatedKey'];
+        if ($filters->isDirty()) {
+            $options['FilterExpression'] = $filters->statement();
         }
 
-        $this->_trips = $i;
+        $options['ExpressionAttributeNames'] = array_merge(
+            $filters->names(), $conditions->names()
+        );
 
-        return $collection;
+        $values = array_merge(
+            $filters->values(), $conditions->values()
+        );
+
+        $options['ExpressionAttributeValues'] = $this->_marshaler->marshalJson(
+            json_encode($values)
+        );
+
+        return array_merge($this->_options, $options);
     }
 
-    public function fetch()
+    public function fetch($limit = 1, $key = false)
     {
-        $result = $this->_client->query($this->_options);
+        $paginator = new Paginator(
+            $this->_client, $this->compile(), $key
+        );
 
-        $collection = array();
-
-        foreach ($result['Items'] as $item) {
-            $collection[] = $this->_marshaler->unmarshalItem($item);
-        }
-
-        $this->_trips = 1;
-        $this->_pointer = $result['LastEvaluatedKey'];
-
-        return $collection;
+        return new Resultset(
+            $this->_marshaler, $paginator->query($limit)
+        );
     }
 }

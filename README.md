@@ -24,11 +24,8 @@ $query = Bego\Query::create($client, new Aws\DynamoDb\Marshaler())
     ->condition('Timestamp', '>=', $date)
     ->filter('User', '=', $User);
 
-/* Compile all query options into one request */
-$statement = $query->prepare();
-
 /* Execute result and return first page of results */
-$results = $statement->fetch(); 
+$results = $query->fetch(); 
 
 foreach ($results as $item) {
     echo "{$item['Id']}\n";
@@ -42,7 +39,6 @@ $results = Bego\Query::create($client, $marshaler)
     ->condition('Timestamp', '>=', $date)
     ->condition('Name', '=', $name)
     ->filter('User', '=', $User)
-    ->prepare()
     ->fetch(); 
 ```
 
@@ -54,20 +50,19 @@ $results = Bego\Query::create($client, $marshaler)
     ->condition('Timestamp', '>=', $date)
     ->condition('Name', '=', $name)
     ->filter('User', '=', $User)
-    ->prepare()
     ->fetch(); 
 ```
 
 ## Descending Order ##
 DynamoDb always sorts results by the sort key value in ascending order. Getting results in descending order can be done using the reverse() flag:
 ```
-$statement = Bego\Query::create($client, $marshaler)
+$results = Bego\Query::create($client, $marshaler)
     ->table('Logs')
     ->reverse()
     ->condition('Timestamp', '>=', $date)
     ->condition('Name', '=', $name)
     ->filter('User', '=', $User)
-    ->prepare();
+    ->fetch();
 ```
 
 ## Indexes ##
@@ -78,57 +73,74 @@ $results = Bego\Query::create($client, $marshaler)
     ->condition('Timestamp', '>=', $date)
     ->condition('Name', '=', $name)
     ->filter('User', '=', $User)
-    ->prepare()
     ->fetch();
 ```
 
 ## Consistent Reads ##
 DynamoDb performs eventual consistent reads by default. For strongly consistent reads set the consistent() flag:
 ```
-$statement = Bego\Query::create($client, $marshaler)
+$results = Bego\Query::create($client, $marshaler)
     ->table('Logs')
     ->consistent()
     ->condition('Timestamp', '>=', $date)
     ->condition('Name', '=', $name)
     ->filter('User', '=', $User)
-    ->prepare();
+    ->fetch();
 ```
 
 ## Limiting Results ##
-DynamoDb allows you to limit the number of items returned in the result. Note that this limit is applied to the key conidtion only. DynamoDb will apply filters on the limit resultset:
+DynamoDb allows you to limit the number of items returned in the result. Note that this limit is applied to the key conidtion only. DynamoDb will apply filters after the limit is imposed on the result set:
 ```
-$statement = Bego\Query::create($client, $marshaler)
+$results = Bego\Query::create($client, $marshaler)
     ->table('Logs')
     ->consistent()
     ->condition('Timestamp', '>=', $date)
     ->filter('User', '=', $User)
     ->limit(100)
-    ->prepare();
+    ->fetch();
 ```
 
 ## Paginating ##
-DynanmoDb limits the results to 1MB. Therefor, pagination has to be implemented to traverse beyond the first page. There are two options available to do the pagination work: fetchAll() or fetchMany()
+DynanmoDb limits the results to 1MB. Therefor, pagination has to be implemented to traverse beyond the first page. There are two options available to do the pagination work:
 ```
-$statement = Bego\Query::create($client, $marshaler)
+$query = Bego\Query::create($client, $marshaler)
     ->table('Logs')
     ->condition('Timestamp', '>=', $date)
-    ->filter('User', '=', $User)
-    ->prepare();
+    ->filter('User', '=', $User);
 
-/* Get all items no matter the cost */
-$results = $statement->fetchAll();
+/* Option 1: Get all items no matter the cost */
+$results = $query->fetch(false);
 
-/* Execute as many calls as is required to get 1000 items */
-$results = $statement->fetchMany(1000); 
+/* Option 2: Execute up to 10 queries and return the aggregrated results */
+$results = $query->fetch(10); 
+```
+
+In some cases one may want to paginate accross multiple hops;
+
+```
+$query = Bego\Query::create($client, $marshaler)
+    ->table('Logs')
+    ->condition('Timestamp', '>=', $date)
+    ->filter('User', '=', $User);
+
+/* First Hop: Get one page */
+$results = $query->fetch(1);
+$pointer = $results->getLastEvaluatedKey();
+
+/* Second Hop: Get one more page, continueing from previous request */
+$results = $query->fetch(1, $pointer); 
 ```
 
 ## Capacity Units Consumed ##
 DynamoDb can calculate the total number of read capacity units for every query. This can be enabled using the consumption() flag:
+
 ```
-$statement = Bego\Query::create($client, $marshaler)
+$results = Bego\Query::create($client, $marshaler)
     ->table('Logs')
     ->consumption()
     ->condition('Timestamp', '>=', $date)
     ->filter('User', '=', $User)
-    ->prepare();
+    ->fetch();
+
+echo $results->getCapacityUnitsConsumed();
 ```
