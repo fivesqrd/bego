@@ -45,9 +45,14 @@ class Build
         return $this->option('IndexName', $value);
     }
 
-    public function reverse()
+    public function consistent($flag = true)
     {
-        return $this->option('ScanIndexForward', false);
+        return $this->option('ConsistentRead', ($flag === true));
+    }
+
+    public function reverse($flag = true)
+    {
+        return $this->option('ScanIndexForward', ($flag === true));
     }
 
     public function filter($field, $operator, $value)

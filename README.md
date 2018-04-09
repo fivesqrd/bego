@@ -15,13 +15,13 @@ $client = new Aws\DynamoDb\DynamoDbClient([
 
 $time      = strtotime('-24 hours');
 $name      = 'Test';
-$server    = 'Web-Server-1';
+$User    = 'Web-User-1';
 $date      = date('Y-m-d H:i:s', $time);
 
 $query = Bego\Query::create($client, new Aws\DynamoDb\Marshaler())
     ->table('Logs')
     ->condition('Timestamp', '>=', $date)
-    ->filter('Server', '=', $server);
+    ->filter('User', '=', $User);
 
 /* Compile all query options into one request */
 $statement = $query->prepare();
@@ -40,7 +40,7 @@ $results = Bego\Query::create($client, $marshaler)
     ->table('Logs')
     ->condition('Timestamp', '>=', $date)
     ->condition('Name', '=', $name)
-    ->filter('Server', '=', $server)
+    ->filter('User', '=', $User)
     ->prepare()
     ->fetch(); 
 ```
@@ -52,7 +52,7 @@ $results = Bego\Query::create($client, $marshaler)
     ->table('Logs')
     ->condition('Timestamp', '>=', $date)
     ->condition('Name', '=', $name)
-    ->filter('Server', '=', $server)
+    ->filter('User', '=', $User)
     ->prepare()
     ->fetch(); 
 ```
@@ -65,7 +65,7 @@ $statement = Bego\Query::create($client, $marshaler)
     ->reverse()
     ->condition('Timestamp', '>=', $date)
     ->condition('Name', '=', $name)
-    ->filter('Server', '=', $server)
+    ->filter('User', '=', $User)
     ->prepare();
 ```
 
@@ -76,9 +76,21 @@ $results = Bego\Query::create($client, $marshaler)
     ->index('Name-Timestamp-Index')
     ->condition('Timestamp', '>=', $date)
     ->condition('Name', '=', $name)
-    ->filter('Server', '=', $server)
+    ->filter('User', '=', $User)
     ->prepare()
     ->fetch();
+```
+
+## Consistent Reads ##
+DynamoDb performs eventual consistent reads by default. For strongly consistent reads set the consistent() flag:
+```
+$statement = Bego\Query::create($client, $marshaler)
+    ->table('Logs')
+    ->consistent()
+    ->condition('Timestamp', '>=', $date)
+    ->condition('Name', '=', $name)
+    ->filter('User', '=', $User)
+    ->prepare();
 ```
 
 ## Paginating ##
@@ -88,7 +100,7 @@ $statement = Bego\Query::create($client, $marshaler)
     ->table('Logs')
     ->condition('Timestamp', '>=', $date)
     ->condition('Name', '=', $name)
-    ->filter('Server', '=', $server)
+    ->filter('User', '=', $User)
     ->prepare();
 
 /* Get all items no matter the cost */
