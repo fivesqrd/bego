@@ -38,11 +38,24 @@ class Expression
 
         $this->_names[$name] = $field;
 
-        array_push($this->_statements, "{$name} {$operator} {$placeholder}");
+        if ($this->_isFunction($operator)) {
+            $statement = "{$operator}({$name}, {$placeholder})";
+        } else {
+            $statement = "{$name} {$operator} {$placeholder}";
+        }
+
+        array_push($this->_statements, $statement);
 
         $this->_values[$placeholder] = $value;
 
         return $this;
+    }
+
+    protected function _isFunction($value)
+    {
+        $methods = ['begins_with'];
+
+        return in_array($value, $methods);
     }
 
     public function values()

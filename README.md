@@ -49,11 +49,11 @@ foreach ($results as $item) {
 echo "{$results->count()} items in result set\n";
 echo "{$results->getScannedCount()} items scanned in query\n";
 
-print_r($results->first());
+$item = $results->first();
 
-print_r($results->last());
+$item = $results->last();
 
-printr_($results->item(3)); //3rd item
+$item = $results->item(3); //3rd item
 
 ```
 
@@ -74,7 +74,7 @@ $results = Bego\Query::create($client, $marshaler)
     ->table('Logs')
     ->condition('Timestamp', '>=', $date)
     ->condition('Name', '=', $name)
-    ->filter('User', '=', $user)
+    ->filter('User', 'begins_with', 'jo')
     ->fetch(); 
 ```
 
