@@ -14,11 +14,12 @@ class Table
         $this->_model = $model;
     }
 
-    public function fetch($partition, $sort = null)
+    public function fetch($partition, $sort = null, $consistent = false)
     {
         $result = $this->_db->client()->getItem([
-            'TableName' => $this->_model->name(),
-            'Key'       => $this->_getKey($this->_model, $partition, $sort)
+            'TableName'     => $this->_model->name(),
+            'Key'           => $this->_getKey($this->_model, $partition, $sort),
+            'ConsistenRead' => $consistent
         ]);
 
         return new Item(
