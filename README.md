@@ -1,7 +1,6 @@
 # Bego
 
-Bego is a library for making DynamoDb queries simpler to work with.
-
+Bego is a PHP library that makes working DynamoDb tables simpler.
 
 ## Working with models ##
 Create your table's model class
