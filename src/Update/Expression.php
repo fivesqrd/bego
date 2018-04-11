@@ -1,6 +1,6 @@
 <?php
 
-namespace Bego\Query;
+namespace Bego\Update;
 
 /**
  * key condition expression
@@ -13,12 +13,10 @@ class Expression
 
     protected $_values = [];
 
-    public function __construct($items = [])
+    public function __construct($attributes = [])
     {
-        foreach ($items as $item) {
-            $this->add(
-                $item['name'], $item['operator'], $item['value']
-            );
+        foreach ($attributes as $name => $value) {
+            $this->add($name, $value);
         }
     }
 
@@ -27,7 +25,7 @@ class Expression
         return count($this->_values) > 0;
     }
 
-    public function add($name, $operator, $value)
+    public function add($name, $value)
     {
         $key = '#' . $name;
         $placeholder = ':' . $name;
@@ -38,24 +36,11 @@ class Expression
 
         $this->_names[$key] = $name;
 
-        if ($this->_isFunction($operator)) {
-            $statement = "{$operator}({$key}, {$placeholder})";
-        } else {
-            $statement = "{$key} {$operator} {$placeholder}";
-        }
-
-        array_push($this->_statements, $statement);
+        array_push($this->_statements, "{$key} = {$placeholder}");
 
         $this->_values[$placeholder] = $value;
 
         return $this;
-    }
-
-    protected function _isFunction($value)
-    {
-        $methods = ['begins_with'];
-
-        return in_array($value, $methods);
     }
 
     public function values()
@@ -70,6 +55,6 @@ class Expression
 
     public function statement()
     {
-        return implode(' and ', $this->_statements);
+        return 'SET ' . implode(', ', $this->_statements);
     }
 }

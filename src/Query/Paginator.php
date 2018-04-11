@@ -4,7 +4,7 @@ namespace Bego\Query;
 
 class Paginator
 {
-    protected $_client;
+    protected $_db;
 
     protected $_options = [];
 
@@ -20,9 +20,9 @@ class Paginator
         'LastEvaluatedKey'  => null
     ];
 
-    public function __construct($client, $options, $key = null)
+    public function __construct($db, $options, $key = null)
     {
-        $this->_client = $client;
+        $this->_db= $db;
         $this->_options = $options;
         $this->_key = $key;
     }
@@ -41,7 +41,7 @@ class Paginator
             $options['ExclusiveStartKey'] = $offset;
         }
 
-        return $this->_client->query($options);
+        return $this->_db->client()->query($options);
     }
 
     public function query($limit = null)

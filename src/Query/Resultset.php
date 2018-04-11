@@ -2,6 +2,8 @@
 
 namespace Bego\Query;
 
+use Bego\Item;
+
 class Resultset implements \Iterator, \Countable
 {
     protected $_pointer;
@@ -74,8 +76,8 @@ class Resultset implements \Iterator, \Countable
             return null;
         }
 
-        return $this->_marshaler->unmarshalItem(
-            $this->_result['Items'][$index]
+        return new Item(
+            $this->_marshaler->unmarshalItem($this->_result['Items'][$index])
         );
     }
 

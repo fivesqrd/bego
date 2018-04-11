@@ -9,23 +9,17 @@ class Statement
         'ScanIndexForward'  => true,
     ];
 
+    protected $_partition;
+
     protected $_filters = [];
 
     protected $_conditions = [];
 
-    protected $_client;
+    protected $_db;
 
-    protected $_marshaler;
-
-    public static function create($client, $marshaler)
+    public function __construct($db)
     {
-        return new self($client, $marshaler);
-    }
-
-    public function __construct($client, $marshaler)
-    {
-        $this->_client = $client;
-        $this->_marshaler = $marshaler;
+        $this->_db = $db;
     }
 
     public function option($key, $value)
@@ -70,10 +64,26 @@ class Statement
         return $this->option('ExclusiveStartKey', $value);
     }
 
-    public function filter($field, $operator, $value)
+    public function partition($value)
+    {
+        $this->_partition = $value;
+
+        return $this;
+    }
+
+    public function key($value)
+    {
+        if (!$this->_partition) {
+            throw new \Exception('Partition key attribute name not set');
+        }
+
+        return $this->condition($this->_partition, '=', $value);
+    }
+
+    public function filter($name, $operator, $value)
     {
         array_push($this->_filters, [
-            'field'    => $field,
+            'name'     => $name,
             'operator' => $operator,
             'value'    => $value
         ]);
@@ -81,10 +91,10 @@ class Statement
         return $this;
     }
 
-    public function condition($field, $operator, $value)
+    public function condition($name, $operator, $value)
     {
         array_push($this->_conditions, [
-            'field'    => $field,
+            'name'     => $name,
             'operator' => $operator,
             'value'    => $value
         ]);
@@ -115,7 +125,7 @@ class Statement
             $filters->values(), $conditions->values()
         );
 
-        $options['ExpressionAttributeValues'] = $this->_marshaler->marshalJson(
+        $options['ExpressionAttributeValues'] = $this->_db->marshaler()->marshalJson(
             json_encode($values)
         );
 
@@ -125,11 +135,11 @@ class Statement
     public function fetch($limit = 1, $key = false)
     {
         $paginator = new Paginator(
-            $this->_client, $this->compile(), $key
+            $this->_db, $this->compile(), $key
         );
 
         return new Resultset(
-            $this->_marshaler, $paginator->query($limit)
+            $this->_db->marshaler(), $paginator->query($limit)
         );
     }
 }
