@@ -52,9 +52,6 @@ $db = new Bego\Database(
 );
 
 $table = $db->table(new App\MyTables\Music());
-
-/* Enable consumption stats in results */
-$table = $db->table(new App\MyTables\Logs(), true);
 ```
 
 ## Create an item ##

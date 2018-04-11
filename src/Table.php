@@ -8,13 +8,10 @@ class Table
 
     protected $_model;
 
-    protected $_consumption = false;
-
-    public function __construct(Database $db, Model $model, $consumption = false)
+    public function __construct(Database $db, Model $model)
     {
         $this->_db = $db;
         $this->_model = $model;
-        $this->_consumption = $consumption;
     }
 
     public function fetch($partition, $sort = null)
@@ -87,8 +84,6 @@ class Table
 
         $query->table($this->_model->name());
 
-        $query->consumption($this->_consumption);
-            
         if ($index) {
             $spec = $this->_model->index($index);
             $query->index($index);

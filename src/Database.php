@@ -24,8 +24,8 @@ class Database
         return $this->_marshaler;
     }
 
-    public function table($model, $consumption = false)
+    public function table($model)
     {
-        return new Table($this, $model, $consumption);
+        return new Table($this, $model);
     }
 }
