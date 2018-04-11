@@ -51,13 +51,13 @@ $db = new Bego\Database(
     new Aws\DynamoDb\DynamoDbClient($config), new Aws\DynamoDb\Marshaler()
 );
 
-$table = $db->table(new App\MyTables\Music());
+$music = $db->table(new App\MyTables\Music());
 ```
 
 ## Create an item ##
 ```
 /* Create and persist a new item */
-$item = $table->put([
+$item = $music->put([
     'Id'        => uniqid(), 
     'Artitst'   => 'Bob Dylan',
     'SongTitle' => 'How many roads'
@@ -67,12 +67,12 @@ $item = $table->put([
 ## Get an item ##
 ```
 /* Fetch an item */
-$item = $table->fetch(
+$item = $music->fetch(
     'Bob Dylan', 'How many roads'
 );
 
 /* Perform a consistent read */
-$item = $table->fetch(
+$item = $music->fetch(
     'Bob Dylan', 'How many roads', true
 );
 
@@ -84,9 +84,9 @@ echo $item->get('Id');
 /* Update an item */
 $item->set('Year', 1966);
 
-$result = $table->update($item);
+$result = $music->update($item);
 
-$results = $table->query()
+$results = $music->query()
     ->key('Bob Dylan')
     ->condition('SongTitle', '=', 'How many roads')
     ->filter('Year', '=', '1966')
@@ -94,13 +94,13 @@ $results = $table->query()
 
 foreach ($results as $item) {
     $item->set('Year', $item->get('Year') + 1);
-    $table->update($item);
+    $music->update($item);
 }
 ```
 
 ## Batch update items ##
 ```
-$results = $table->query()
+$results = $music->query()
     ->key('Bob Dylan')
     ->condition('SongTitle', '=', 'How many roads')
     ->filter('Year', '=', '1966')
@@ -110,7 +110,7 @@ foreach ($results as $item) {
     $item->set('Year', $item->get('Year') + 1);
 }
 
-$result = $table->update($results);
+$result = $music->update($results);
 
 echo $result->getConsumedCapacity();
 ```
@@ -119,21 +119,21 @@ echo $result->getConsumedCapacity();
 You can Query any DynamoDb table or secondary index, provided that it has a composite primary key (partition key and sort key)
 ```
 /* Query the table */
-$results = $table->query()
+$results = $music->query()
     ->key('Bob Dylan')
     ->condition('SongTitle', '=', 'How many roads')
     ->filter('Year', '=', '1966')
     ->fetch(); 
 
 /* Query a global index */
-$results = $table->query('My-Global-Index')
+$results = $music->query('My-Global-Index')
     ->key('Bob Dylan')
     ->condition('SongTitle', '=', 'How many roads')
     ->filter('Year', '=', '1966')
     ->fetch(); 
 
 /* Query a local index */
-$results = $table->query('My-Local-Index')
+$results = $music->query('My-Local-Index')
     ->key('Bob Dylan')
     ->condition('SongTitle', '=', 'How many roads')
     ->filter('Year', '=', '1966')
@@ -143,7 +143,7 @@ $results = $table->query('My-Local-Index')
 ### Key condition and filter expressions ###
 Multiple key condition / filter expressions can be added. DynamoDb applies key conditions to the query but filters are applied to the query results
 ```
-$results = $table->query()
+$results = $music->query()
     ->key('Bob Dylan')
     ->condition('SongTitle', 'begins_with', 'How')
     ->filter('Year', '=' , '1966')
@@ -153,7 +153,7 @@ $results = $table->query()
 ### Descending Order ###
 DynamoDb always sorts results by the sort key value in ascending order. Getting results in descending order can be done using the reverse() flag:
 ```
-$results = $table->query()
+$results = $music->query()
     ->reverse()
     ->key('Bob Dylan')
     ->condition('SongTitle', '=', 'How many roads')
@@ -164,7 +164,7 @@ $results = $table->query()
 The result set object implements the Iterator interface and canned by used straight way. It provived some handy methods as well.
 ```
 /* Execute query and return first page of results */
-$results = $table->query()
+$results = $music->query()
     ->key('Bob Dylan')
     ->condition('SongTitle', '=', 'How many roads')
     ->fetch(); 
@@ -188,7 +188,7 @@ $item = $results->item(3); //3rd item
 ### Consistent Reads ###
 DynamoDb performs eventual consistent reads by default. For strongly consistent reads set the consistent() flag:
 ```
-$results = $table->query()
+$results = $music->query()
     ->key('Bob Dylan')
     ->condition('SongTitle', '=', 'How many roads')
     ->consistent()
@@ -198,7 +198,7 @@ $results = $table->query()
 ### Limiting Results ###
 DynamoDb allows you to limit the number of items returned in the result. Note that this limit is applied to the key conidtion only. DynamoDb will apply filters after the limit is imposed on the result set:
 ```
-$results = $table->query()
+$results = $music->query()
     ->key('Bob Dylan')
     ->condition('SongTitle', '=', 'How many roads')
     ->limit(100)
@@ -208,7 +208,7 @@ $results = $table->query()
 ### Paginating ###
 DynanmoDb limits the results to 1MB. Therefor, pagination has to be implemented to traverse beyond the first page. There are two options available to do the pagination work:
 ```
-$results = $table->query()
+$results = $music->query()
     ->key('Bob Dylan')
     ->condition('SongTitle', '=', 'How many roads');
 
@@ -222,7 +222,7 @@ $results = $query->fetch(10);
 In some cases one may want to paginate accross multiple hops;
 
 ```
-$results = $table->query()
+$results = $music->query()
     ->key('Bob Dylan')
     ->condition('SongTitle', '=', 'How many roads');
 
@@ -238,7 +238,7 @@ $results = $query->fetch(1, $pointer);
 DynamoDb can calculate the total number of read capacity units for every query. This can be enabled using the consumption() flag:
 
 ```
-$results = $table->query()
+$results = $music->query()
     ->key('Bob Dylan')
     ->condition('SongTitle', '=', 'How many roads')
     ->consumption()
