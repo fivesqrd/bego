@@ -58,7 +58,7 @@ $table = $db->table(new App\MyTables\Music());
 ```
 /* Create and persist a new item */
 $item = $table->put([
-    'Id'        => uniqueid(), 
+    'Id'        => uniqid(), 
     'Artitst'   => 'Bob Dylan',
     'SongTitle' => 'How many roads'
 ]);
