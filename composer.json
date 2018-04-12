@@ -8,7 +8,6 @@
             "Bego\\": "src/"
         }
     },
-    "license": ["BSD License"],
     "authors": [
         {
             "name": "Christian Burger",

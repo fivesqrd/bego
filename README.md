@@ -36,7 +36,8 @@ class Music extends Bego\Model
 }
 ```
 
-Now the table is ready to be used throughout your app...
+## Instantiating a table ##
+Instantiate the tables you need throughout your app...
 ```
 $config = [
     'version' => 'latest',
