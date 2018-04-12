@@ -14,8 +14,10 @@ class Item
         $this->_init = $attributes;
     }
 
-    public function get($key)
+    public function attribute($key)
     {
+        //TODO: support dot notation of nested attributes
+        
         if (!array_key_exists($key, $this->_attributes)) {
             return null;
         }
@@ -25,7 +27,9 @@ class Item
 
     public function set($key, $value)
     {
-        if ($this->get($key) !== $value) {
+        //TODO: Support SET and REMOVE actions
+
+        if ($this->attribute($key) !== $value) {
             $this->_diff[$key] = $value;
         }
 

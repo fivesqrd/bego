@@ -77,7 +77,7 @@ $item = $music->fetch(
     'Bob Dylan', 'How many roads', true
 );
 
-echo $item->get('Id');
+echo $item->attribute('Id');
 ```
 
 ## Update an item ##
@@ -94,7 +94,7 @@ $results = $music->query()
     ->fetch(); 
 
 foreach ($results as $item) {
-    $item->set('Year', $item->get('Year') + 1);
+    $item->set('Year', $item->attribute('Year') + 1);
     $music->update($item);
 }
 ```
@@ -108,7 +108,7 @@ $results = $music->query()
     ->fetch(); 
 
 foreach ($results as $item) {
-    $item->set('Year', $item->get('Year') + 1);
+    $item->set('Year', $item->attribute('Year') + 1);
 }
 
 $result = $music->update($results);

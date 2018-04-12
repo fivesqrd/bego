@@ -15,6 +15,7 @@ class Expression
 
     public function __construct($attributes = [])
     {
+        //TODO: Support SET and REMOVE actions
         foreach ($attributes as $name => $value) {
             $this->add($name, $value);
         }

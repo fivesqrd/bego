@@ -59,7 +59,9 @@ class Table
 
         /* Generate a key from the table model */
         $key = $this->_getKey(
-            $this->_model, $item->get($this->_model->partition()), $item->get($this->_model->sort())
+            $this->_model, 
+            $item->attribute($this->_model->partition()), 
+            $item->attribute($this->_model->sort())
         );
 
         /* Marshal the expression values */
