@@ -50,9 +50,7 @@ class Resultset implements \Iterator, \Countable
 
     public function last()
     {
-        return $this->item(
-            $this->count() - 1
-        );
+        return $this->item($this->count() - 1);
     }
 
     public function valid()
@@ -79,6 +77,29 @@ class Resultset implements \Iterator, \Countable
         return new Item(
             $this->_marshaler->unmarshalItem($this->_result['Items'][$index])
         );
+    }
+
+    /**
+     * Extracts one attribute from every item in the set
+     */
+    public function attribute($key)
+    {
+        $collection = [];
+
+        for ($i = 0; $i < $this->count(); $i++) {
+            $collection[] = $this->item($i)->attribute($key);
+        }
+
+        return $collection;
+    }
+
+    /**
+     * Perform aggregated sum on one attribute for 
+     * every item in the set
+     */
+    public function sum($key)
+    {
+        return array_sum($this->attribute($key));
     }
 
     public function param($key, $default = null)

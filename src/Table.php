@@ -27,17 +27,6 @@ class Table
         );
     }
 
-    protected function _getKey($model, $partition, $sort = null)
-    {
-        $keys[$model->partition()] = $this->_db->marshaler()->marshalValue($partition);
-
-        if ($sort) {
-            $keys[$model->sort()] = $this->_db->marshaler()->marshalValue($sort);
-        }
-
-        return $keys;
-    }
-
     public function put($attributes)
     {
         $this->_db->client()->putItem([
@@ -95,5 +84,16 @@ class Table
         return $query->partition(
             isset($spec['key']) ? $spec['key'] : $this->_model->partition()
         );
+    }
+
+    protected function _getKey($model, $partition, $sort = null)
+    {
+        $keys[$model->partition()] = $this->_db->marshaler()->marshalValue($partition);
+
+        if ($sort) {
+            $keys[$model->sort()] = $this->_db->marshaler()->marshalValue($sort);
+        }
+
+        return $keys;
     }
 }

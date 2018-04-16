@@ -14,11 +14,16 @@ class Item
         $this->_init = $attributes;
     }
 
+    public function isset($key)
+    {
+        return array_key_exists($key, $this->_attributes);
+    }
+
     public function attribute($key)
     {
         //TODO: support dot notation of nested attributes
         
-        if (!array_key_exists($key, $this->_attributes)) {
+        if (!$this->isset($key)) {
             return null;
         }
 

@@ -78,6 +78,10 @@ $item = $music->fetch(
 );
 
 echo $item->attribute('Id');
+
+if ($item->isset('hit')) {
+    echo "{$item->attribute('SongTitle')} is a hit";
+}
 ```
 
 ## Update an item ##
@@ -181,7 +185,14 @@ $item = $results->first();
 
 $item = $results->last();
 
-$item = $results->item(3); //3rd item
+//Get the 3rd item
+$item = $results->item(3); 
+
+//Extract one attribute from all items
+$allTitles = $results->attribute('SongTitle'); 
+
+//Aggregegate one attribute for all items
+$totalSales = $results->sum('Sales'); 
 
 ```
 
