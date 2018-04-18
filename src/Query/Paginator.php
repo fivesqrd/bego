@@ -8,8 +8,6 @@ class Paginator
 
     protected $_options = [];
 
-    protected $_trips = 0;
-
     protected $_key = false;
 
     protected $_result = [
@@ -47,7 +45,8 @@ class Paginator
     public function query($limit = null)
     {
         $trips = 0;
-        $key = $this->_key;
+        $key   = $this->_key;
+        $start = microtime(true);
 
         do {
             $result = $this->_execute(
@@ -64,14 +63,12 @@ class Paginator
 
         } while ($result !== false);
 
-        $this->_trips += $trips;
+        $meta = [
+            'X-Query-Time'  => microtime(true) - $start,
+            'X-Query-Count' => $trips
+        ];
 
-        return $this->_result;
-    }
-
-    public function getTripCount()
-    {
-        return $this->_trips;
+        return array_merge($this->_result, $meta);
     }
 
     protected function _aggregate($result)

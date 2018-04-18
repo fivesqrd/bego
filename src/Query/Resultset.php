@@ -68,6 +68,9 @@ class Resultset implements \Iterator, \Countable
         return count($this->_result['Items']);
     }
 
+    /**
+     * Instantiate one item from the set
+     */
     public function item($index)
     {
         if (!array_key_exists($index, $this->_result['Items'])) {
@@ -135,6 +138,22 @@ class Resultset implements \Iterator, \Countable
     public function getScannedCount()
     {
         return $this->param('ScannedCount');
+    }
+
+    /** 
+     * Return the number of trips required by the paginator
+     */
+    public function getQueryCount()
+    {
+        return $this->param('X-Query-Count');
+    }
+
+    /** 
+     * Return the execution time of the query(ies)
+     */
+    public function getQueryTime()
+    {
+        return $this->param('X-Query-Time');
     }
 
     /**

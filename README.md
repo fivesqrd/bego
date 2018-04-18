@@ -180,6 +180,8 @@ foreach ($results as $item) {
 
 echo "{$results->count()} items in result set\n";
 echo "{$results->getScannedCount()} items scanned in query\n";
+echo "{$results->getQueryCount()} connections to the database\n";
+echo "{$results->getQueryTime()} total execution time (seconds)\n";
 
 $item = $results->first();
 
