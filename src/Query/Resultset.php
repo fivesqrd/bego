@@ -8,11 +8,7 @@ class Resultset implements \Iterator, \Countable
 {
     protected $_pointer;
 
-    protected $_key;
-
     protected $_marshaler;
-
-    protected $_units = false;
 
     protected $_result = [];
 
