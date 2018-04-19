@@ -53,12 +53,14 @@ class Paginator
                 $this->_options, $key, $trips, $limit
             );
 
-            $this->_aggregate($result);
+            if ($result !== false) {
+                $this->_aggregate($result);
 
-            $trips += 1;
+                $trips += 1;
 
-            if (isset($result['LastEvaluatedKey'])) {
-                $key = $result['LastEvaluatedKey'];
+                if (isset($result['LastEvaluatedKey'])) {
+                    $key = $result['LastEvaluatedKey'];
+                }
             }
 
         } while ($result !== false);
