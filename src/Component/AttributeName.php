@@ -21,7 +21,7 @@ class AttributeName
 
     public function placeholder()
     {
-        return ':' . $this->_attribute;
+        return ':' . $this->_sanitise($this->_attribute);
     }
 
     public function raw()
