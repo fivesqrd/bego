@@ -2,6 +2,8 @@
 
 namespace Bego\Query;
 
+use Bego\Component\AttributeName;
+
 /**
  * key condition expression
  */
@@ -17,7 +19,7 @@ class Expression
     {
         foreach ($items as $item) {
             $this->add(
-                $item['name'], $item['operator'], $item['value']
+                new AttributeName($item['name']), $item['operator'], $item['value']
             );
         }
     }
@@ -27,28 +29,28 @@ class Expression
         return count($this->_values) > 0;
     }
 
-    public function add($name, $operator, $value)
+    public function add(AttributeName $name, $operator, $value)
     {
-        $key = '#' . $name;
-        $placeholder = ':' . $name;
-
-        if (array_key_exists($placeholder, $this->_values)) {
-            throw new \Exception("{$name} cannot be used twice");
+        if (array_key_exists($name->placeholder(), $this->_values)) {
+            throw new \Exception("{$name->raw()} cannot be used twice");
         }
 
-        $this->_names[$key] = $name;
+        $this->_names[$name->key()] = $name->raw();
 
-        if ($this->_isFunction($operator)) {
-            $statement = "{$operator}({$key}, {$placeholder})";
-        } else {
-            $statement = "{$key} {$operator} {$placeholder}";
-        }
+        array_push($this->_statements, $this->_statement($name, $operator));
 
-        array_push($this->_statements, $statement);
-
-        $this->_values[$placeholder] = $value;
+        $this->_values[$name->placeholder()] = $value;
 
         return $this;
+    }
+
+    protected function _statement($attribute, $operator)
+    {
+        if ($this->_isFunction($operator)) {
+            return "{$operator}({$attribute->key()}, {$attribute->placeholder()})";
+        }
+
+        return "{$attribute->key()} {$operator} {$attribute->placeholder()}";
     }
 
     protected function _isFunction($value)
