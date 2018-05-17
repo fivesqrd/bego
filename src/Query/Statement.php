@@ -46,7 +46,7 @@ class Statement
 
     public function reverse($flag = true)
     {
-        return $this->option('ScanIndexForward', ($flag === true));
+        return $this->option('ScanIndexForward', ($flag !== true));
     }
 
     public function consumption($flag = true)
