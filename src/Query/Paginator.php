@@ -63,9 +63,7 @@ class Paginator
 
                 $trips += 1;
 
-                if (isset($result['LastEvaluatedKey'])) {
-                    $key = $result['LastEvaluatedKey'];
-                }
+                $key = $this->_getNewKey($result);
             }
 
         } while ($result !== false);
@@ -76,6 +74,16 @@ class Paginator
         ];
 
         return array_merge($this->_result, $meta);
+    }
+
+    protected function _getNewKey($result)
+    {
+        if (isset($result['LastEvaluatedKey'])) {
+            return $result['LastEvaluatedKey'];
+        } 
+
+        /* Return null to ensure another trips is not attempted */
+        return null;
     }
 
     public function getTrace()
