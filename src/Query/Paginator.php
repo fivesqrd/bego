@@ -10,6 +10,8 @@ class Paginator
 
     protected $_key = false;
 
+    protected $_trace = [];
+
     protected $_result = [
         'Items'             => [],
         'Count'             => null,
@@ -48,6 +50,8 @@ class Paginator
         $key   = $this->_key;
         $start = microtime(true);
 
+        /* TODO: fix duplicate query bug (LastEvaluatedKey not set?) */
+
         do {
             $result = $this->_execute(
                 $this->_options, $key, $trips, $limit
@@ -55,6 +59,7 @@ class Paginator
 
             if ($result !== false) {
                 $this->_aggregate($result);
+                $this->_log($key, $result);
 
                 $trips += 1;
 
@@ -71,6 +76,33 @@ class Paginator
         ];
 
         return array_merge($this->_result, $meta);
+    }
+
+    public function getTrace()
+    {
+        return $this->_trace;
+    }
+
+    public function getLastResult()
+    {
+        return $this->_result;
+    }
+
+    /**
+     * The last key reported by DyanmoDb. Important for pagination
+     */ 
+    public function getLastEvaluatedKey()
+    {
+        return $this->_key;
+    }
+
+    protected function _log($key, $result)
+    {
+        $this->_trace[] = [
+            'start' => $key,
+            'end'   => isset($result['LastEvaluatedKey']) ? $result['LastEvaluatedKey'] : null,
+            'count' => $result['Count']
+        ];
     }
 
     protected function _aggregate($result)

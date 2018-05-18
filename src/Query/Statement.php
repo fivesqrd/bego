@@ -134,12 +134,15 @@ class Statement
 
     public function fetch($limit = 1, $key = false)
     {
-        $paginator = new Paginator(
-            $this->_db, $this->compile(), $key
-        );
-
         return new Resultset(
-            $this->_db->marshaler(), $paginator->query($limit)
+            $this->_db->marshaler(), $this->paginator($key)->query($limit)
+        );
+    }
+
+    public function paginator($key = false)
+    {
+        return new Paginator(
+            $this->_db, $this->compile(), $key
         );
     }
 }
