@@ -29,10 +29,16 @@ class Table
 
     public function put($attributes)
     {
-        $this->_db->client()->putItem([
+        $result = $this->_db->client()->putItem([
             'TableName' => $this->_model->name(),
             'Item'      => $this->_db->marshaler()->marshalItem($attributes)
         ]);
+
+        $response = $result->get('@metadata');
+
+        if ($response['statusCode'] != 200) {
+            throw new Exception("DynamoDb returned unsuccessful response code: {$response['statusCode']}");
+        }
 
         return new Item($attributes);
     }
@@ -58,13 +64,19 @@ class Table
             json_encode($expression->values())
         );
 
-        $this->_db->client()->updateItem([
+        $result = $this->_db->client()->updateItem([
             'TableName'                 => $this->_model->name(),
             'Key'                       => $key,
             'ExpressionAttributeNames'  => $expression->names(),
             'ExpressionAttributeValues' => $values,
             'UpdateExpression'          => $expression->statement(),
         ]);
+
+        $response = $result->get('@metadata');
+
+        if ($response['statusCode'] != 200) {
+            throw new Exception("DynamoDb returned unsuccessful response code: {$response['statusCode']}");
+        }
 
         /* Mark item is clean */
         $item->clean();
