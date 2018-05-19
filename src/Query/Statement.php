@@ -132,17 +132,19 @@ class Statement
         return array_merge($this->_options, $options);
     }
 
-    public function fetch($limit = 1, $key = false)
+    public function fetch($pages = 1, $offset = null)
     {
         return new Resultset(
-            $this->_db->marshaler(), $this->paginator($key)->query($limit)
+            $this->_db->marshaler(), $this->paginator($pages, $offset)->query()
         );
     }
 
-    public function paginator($key = false)
+    public function paginator($pages = 1, $offset = false)
     {
+        $conduit = new Conduit($this->_db, $this->compile());
+
         return new Paginator(
-            $this->_db, $this->compile(), $key
+            $conduit, $pages, $offset
         );
     }
 }

@@ -4,86 +4,95 @@ namespace Bego\Query;
 
 class Paginator
 {
-    protected $_db;
+    protected $_conduit;
 
-    protected $_options = [];
+    protected $_state = [
+        'offset' => null, 
+        'trips'  => 0
+    ];
 
-    protected $_key = false;
+    protected $_pageLimit = 1;
 
     protected $_trace = [];
 
-    protected $_result = [
-        'Items'             => [],
-        'Count'             => null,
-        'ScannedCount'      => null,
-        'ConsumedCapacity'  => null,
-        'LastEvaluatedKey'  => null
-    ];
-
-    public function __construct($db, $options, $key = null)
+    public function __construct($conduit, $limit = 1, $offset = null)
     {
-        $this->_db= $db;
-        $this->_options = $options;
-        $this->_key = $key;
+        $this->_conduit = $conduit;
+        $this->_state['offset'] = $offset;
+        $this->_pageLimit = $limit;
     }
 
-    protected function _execute($options, $offset, $trips, $limit = null)
+    public function query()
     {
-        if ($limit && $trips >= $limit) {
-            return false;
-        }
+        $aggregator = new Aggregator();
 
-        if ($offset === null) {
-            return false;
-        }
-
-        if ($offset) {
-            $options['ExclusiveStartKey'] = $offset;
-        }
-
-        return $this->_db->client()->query($options);
-    }
-
-    public function query($limit = null)
-    {
-        $trips = 0;
-        $key   = $this->_key;
         $start = microtime(true);
 
-        /* TODO: fix duplicate query bug (LastEvaluatedKey not set?) */
-
         do {
-            $result = $this->_execute(
-                $this->_options, $key, $trips, $limit
-            );
+            /* Execute query */
+            $result = $this->_conduit->execute($this->_state['offset']);
 
-            if ($result !== false) {
-                $this->_aggregate($result);
-                $this->_log($key, $result);
+            /* Add this trip to the trace */
+            $this->_trace[] = $this->_conduit->getLastLog();
 
-                $trips += 1;
+            /* Update the paginator's state */
+            $this->_state['offset'] = $this->_getNewOffset($result);
+            $this->_state['trips'] += 1;
 
-                $key = $this->_getNewKey($result);
-            }
+            /* Append last result to previous */
+            $aggregator->append($result);
 
-        } while ($result !== false);
+        } while (
+            $this->_isAnotherTripRequired($this->_state) === true
+        );
 
         $meta = [
             'X-Query-Time'  => microtime(true) - $start,
-            'X-Query-Count' => $trips
+            'X-Query-Count' => $this->_state['trips']
         ];
 
-        return array_merge($this->_result, $meta);
+        return array_merge(
+            $aggregator->result(), $meta
+        );
     }
 
-    protected function _getNewKey($result)
+    protected function _isAnotherTripRequired($state)
+    {
+        /* If no more results available, don't attempt another trip */
+        if ($this->_isPageLimitReached($state['trips'])) {
+            return false;
+        }
+
+        /* If no more results available, don't attempt another trip */
+        if ($state['offset'] === false) {
+            return false;
+        }
+
+        return true;
+    }
+
+    protected function _isPageLimitReached($trips)
+    {
+        if (!$this->_pageLimit) {
+            return false;
+        }
+
+        /* If a page limit is definedd ensure that we don't exceed it */
+        if ($trips < $this->_pageLimit) {
+            return false;
+        }
+
+        return true;
+    }
+
+    protected function _getNewOffset($result)
     {
         if (isset($result['LastEvaluatedKey'])) {
             return $result['LastEvaluatedKey'];
         } 
 
-        /* Return null to ensure another trips is not attempted */
-        return null;
+        /* No offset */
+        return false;
     }
 
     public function getTrace()
@@ -91,52 +100,11 @@ class Paginator
         return $this->_trace;
     }
 
-    public function getLastResult()
-    {
-        return $this->_result;
-    }
-
     /**
      * The last key reported by DyanmoDb. Important for pagination
      */ 
     public function getLastEvaluatedKey()
     {
-        return $this->_key;
-    }
-
-    protected function _log($key, $result)
-    {
-        $this->_trace[] = [
-            'start' => $key,
-            'end'   => isset($result['LastEvaluatedKey']) ? $result['LastEvaluatedKey'] : null,
-            'count' => $result['Count']
-        ];
-    }
-
-    protected function _aggregate($result)
-    {
-        if (isset($result['Items'])) {
-            $this->_result['Items'] = array_merge(
-                $this->_result['Items'], $result['Items']
-            );
-        }
-
-        if (isset($result['Count'])) {
-            $this->_result['Count'] += $result['Count'];
-        }
-
-        if (isset($result['ScannedCount'])) {
-            $this->_result['ScannedCount'] += $result['ScannedCount'];
-        }
-
-        if (isset($result['ConsumedCapacity'])) {
-            $this->_result['ConsumedCapacity'] += $result['ConsumedCapacity'];
-        }
-
-        if (isset($result['LastEvaluatedKey'])) {
-            $this->_result['LastEvaluatedKey'] = $result['LastEvaluatedKey'];
-        } else {
-            $this->_result['LastEvaluatedKey'] = null;
-        }
+        return $this->_state['offset'];
     }
 }
