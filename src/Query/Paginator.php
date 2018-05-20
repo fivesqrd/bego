@@ -48,7 +48,8 @@ class Paginator
 
         $meta = [
             'X-Query-Time'  => microtime(true) - $start,
-            'X-Query-Count' => $this->_state['trips']
+            'X-Query-Count' => $this->_state['trips'],
+            'X-Query-Limit' => $this->_pageLimit
         ];
 
         return array_merge(
