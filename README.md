@@ -262,3 +262,26 @@ $result = $music->update($results);
 
 echo $result->getConsumedCapacity();
 ```
+
+## Creating a table (experimental) ##
+```
+$spec = [
+    'types'     => [
+        'partition' => 'S',
+        'sort'      => 'S',
+    ],
+    'capacity'  => ['read' => 5, 'write' => 5],
+    'indexes'   => [
+        'My-Global-Index' => [
+            'type'     => 'global',
+            'keys' => [
+                ['name' => 'Year', 'types' => ['key' => 'HASH', 'attribute' => 'N']],
+                ['name' => 'Artist', 'types' => ['key' => 'RANGE', 'attribute' => 'S']],
+            ],
+            'capacity' => ['read' => 5, 'write' => 5]
+        ],
+    ],
+];
+
+$music->create($spec);
+```

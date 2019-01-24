@@ -6,6 +6,7 @@ class Statement
 {
     protected $_options = [
         'TableName'         => null,
+        'AttributeDefinitions' => [],
         'ProvisionedThroughput' => array(
             'ReadCapacityUnits'  => 5,
             'WriteCapacityUnits' => 5,
@@ -49,6 +50,12 @@ class Statement
 
     public function attribute($name, $type)
     {
+        foreach ($this->_options['AttributeDefinitions'] as $def) {
+            if ($def['AttributeName'] == $name) {
+                return $this;
+            }
+        }
+
         return $this->append('AttributeDefinitions', [
             'AttributeName' => $name,
             'AttributeType' => $type, // S | N | B
@@ -62,27 +69,12 @@ class Statement
         );
     }
 
-    protected function _getKeySchema($name, $type)
-    {
-        return [
-            'AttributeName' => $name,
-            'KeyType' => $type, // HASH | RANGE
-        ];
-    }
-
-    protected function _getProvisionedThroughput($read, $write)
-    {
-        return [
-            'ReadCapacityUnits'  => (int) $read,
-            'WriteCapacityUnits' => (int) $write
-        ];
-    }
-
     public function global($name, $keys, $capacity)
     {
 
         foreach ($keys as $key) {
-            $schema[] = $this->_getKeySchema($key['name'], $key['type']);
+            $this->attribute($key['name'], $key['types']['attribute']);
+            $schema[] = $this->_getKeySchema($key['name'], $key['types']['key']);
         }
 
         return $this->append('GlobalSecondaryIndexes', [ 
@@ -100,7 +92,22 @@ class Statement
 
     public function compile()
     {
-        print_r($this->_options);
         return $this->_options;
+    }
+
+    protected function _getKeySchema($name, $type)
+    {
+        return [
+            'AttributeName' => $name,
+            'KeyType' => $type, // HASH | RANGE
+        ];
+    }
+
+    protected function _getProvisionedThroughput($read, $write)
+    {
+        return [
+            'ReadCapacityUnits'  => (int) $read,
+            'WriteCapacityUnits' => (int) $write
+        ];
     }
 }
