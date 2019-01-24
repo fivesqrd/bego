@@ -90,7 +90,7 @@ class Statement
             'KeySchema'  => $schema,
             'Projection' => [ 
                //'NonKeyAttributes' => [],
-               'ProjectionType' => 'all' 
+               'ProjectionType' => 'ALL' 
             ],
             'ProvisionedThroughput' => $this->_getProvisionedThroughput(
                 $capacity['read'], $capacity['write']
