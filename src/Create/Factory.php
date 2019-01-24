@@ -13,7 +13,7 @@ class Factory
 
         if (isset($spec['capacity'])) {
             $statement->provision(
-                $spec['capacity']['read'], $schema['capacity']['write']
+                $spec['capacity']['read'], $spec['capacity']['write']
             );
         }
 
