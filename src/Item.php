@@ -32,13 +32,29 @@ class Item
 
     public function set($key, $value)
     {
-        //TODO: Support SET and REMOVE actions
-
         if ($this->attribute($key) !== $value) {
-            $this->_diff[$key] = $value;
+            $this->_diff[] = [
+                'attribute' => $key,
+                'value'     => $value,
+                'action'    => 'set'
+            ];
         }
 
         $this->_attributes[$key] = $value;
+
+        return $this;
+    }
+
+    public function remove($key)
+    {
+        if ($this->attribute($key) !== $value) {
+            $this->_diff[] = [
+                'attribute' => $key,
+                'action'    => 'remove'
+            ];
+        }
+
+        unset($this->_attributes[$key]);
 
         return $this;
     }

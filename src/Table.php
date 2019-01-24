@@ -14,6 +14,21 @@ class Table
         $this->_model = $model;
     }
 
+    public function create($spec)
+    {
+        $result = $this->_db->client()->createTable(
+            Create\Factory::model($this->_model, $spec)->compile()
+        );
+
+        $response = $result->get('@metadata');
+
+        if ($response['statusCode'] != 200) {
+            throw new Exception(
+                "DynamoDb returned unsuccessful response code: {$response['statusCode']}"
+            );
+        }
+    }
+
     public function fetch($partition, $sort = null, $consistent = false)
     {
         $result = $this->_db->client()->getItem([
@@ -37,7 +52,9 @@ class Table
         $response = $result->get('@metadata');
 
         if ($response['statusCode'] != 200) {
-            throw new Exception("DynamoDb returned unsuccessful response code: {$response['statusCode']}");
+            throw new Exception(
+                "DynamoDb returned unsuccessful response code: {$response['statusCode']}"
+            );
         }
 
         return new Item($attributes);
@@ -45,7 +62,8 @@ class Table
 
     public function update($item)
     {
-        $expression = new Update\Expression($item->diff());
+        /* Create expression values from the attributes changed in the item */
+        $expression = Update\Expression::item($item);
 
         /* If nothing changed, do nothing */
         if (!$expression->isDirty()) {
@@ -75,7 +93,9 @@ class Table
         $response = $result->get('@metadata');
 
         if ($response['statusCode'] != 200) {
-            throw new Exception("DynamoDb returned unsuccessful response code: {$response['statusCode']}");
+            throw new Exception(
+                "DynamoDb returned unsuccessful response code: {$response['statusCode']}"
+            );
         }
 
         /* Mark item is clean */

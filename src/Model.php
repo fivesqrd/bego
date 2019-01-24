@@ -44,4 +44,9 @@ abstract class Model
 
         return $this->_indexes[$key];
     }
+
+    public function indexes()
+    {
+        return $this->_indexes;
+    }
 }
