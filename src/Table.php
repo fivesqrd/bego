@@ -118,6 +118,20 @@ class Table
         );
     }
 
+    public function scan($index = null)
+    {
+        $scan = new Query\Scan($this->_db);
+
+        $scan->table($this->_model->name());
+
+        if ($index) {
+            $spec = $this->_model->index($index);
+            $scan->index($index);
+        }
+
+        return $scan;
+    }
+
     protected function _getKey($model, $partition, $sort = null)
     {
         $keys[$model->partition()] = $this->_db->marshaler()->marshalValue($partition);
