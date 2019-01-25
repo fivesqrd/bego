@@ -2,6 +2,8 @@
 
 namespace Bego\Query;
 
+use Bego\Exception as BegoException;
+
 class Statement
 {
     protected $_options = [
@@ -109,29 +111,29 @@ class Statement
         $conditions = new Expression($this->_conditions);
         $filters    = new Expression($this->_filters);
 
-        if ($conditions->isDirty()) {
-            $options['KeyConditionExpression'] = $conditions->statement();
+        if (!$conditions->isDirty()) {
+            throw new BegoException(
+                'A condition expression is required to perform a query'
+            );
         }
+
+        $options['KeyConditionExpression'] = $conditions->statement();
 
         if ($filters->isDirty()) {
             $options['FilterExpression'] = $filters->statement();
         }
 
-        if ($conditions->isDirty() || $filters->isDirty()) {
+        $options['ExpressionAttributeNames'] = array_merge(
+            $filters->names(), $conditions->names()
+        );
 
-            $options['ExpressionAttributeNames'] = array_merge(
-                $filters->names(), $conditions->names()
-            );
+        $values = array_merge(
+            $filters->values(), $conditions->values()
+        );
 
-            $values = array_merge(
-                $filters->values(), $conditions->values()
-            );
-
-            $options['ExpressionAttributeValues'] = $this->_db->marshaler()->marshalJson(
-                json_encode($values)
-            );
-            
-        }
+        $options['ExpressionAttributeValues'] = $this->_db->marshaler()->marshalJson(
+            json_encode($values)
+        );
 
         return array_merge($this->_options, $options);
     }
