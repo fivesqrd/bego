@@ -125,9 +125,11 @@ class Statement
             $filters->values(), $conditions->values()
         );
 
-        $options['ExpressionAttributeValues'] = $this->_db->marshaler()->marshalJson(
-            json_encode($values)
-        );
+        if (count($values) > 0) {
+            $options['ExpressionAttributeValues'] = $this->_db->marshaler()->marshalJson(
+                json_encode($values)
+            );
+        }
 
         return array_merge($this->_options, $options);
     }
