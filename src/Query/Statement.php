@@ -117,18 +117,20 @@ class Statement
             $options['FilterExpression'] = $filters->statement();
         }
 
-        $options['ExpressionAttributeNames'] = array_merge(
-            $filters->names(), $conditions->names()
-        );
+        if ($conditions->isDirty() || $filters->isDirty()) {
 
-        $values = array_merge(
-            $filters->values(), $conditions->values()
-        );
+            $options['ExpressionAttributeNames'] = array_merge(
+                $filters->names(), $conditions->names()
+            );
 
-        if (count($values) > 0) {
+            $values = array_merge(
+                $filters->values(), $conditions->values()
+            );
+
             $options['ExpressionAttributeValues'] = $this->_db->marshaler()->marshalJson(
                 json_encode($values)
             );
+            
         }
 
         return array_merge($this->_options, $options);
