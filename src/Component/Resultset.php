@@ -1,6 +1,6 @@
 <?php
 
-namespace Bego\Query;
+namespace Bego\Component;
 
 use Bego\Item;
 

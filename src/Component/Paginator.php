@@ -1,6 +1,6 @@
 <?php
 
-namespace Bego\Scan;
+namespace Bego\Component;
 
 class Paginator
 {

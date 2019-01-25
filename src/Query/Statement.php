@@ -3,6 +3,7 @@
 namespace Bego\Query;
 
 use Bego\Exception as BegoException;
+use Bego\Component;
 
 class Statement
 {
@@ -76,7 +77,7 @@ class Statement
     public function key($value)
     {
         if (!$this->_partition) {
-            throw new \Exception('Partition key attribute name not set');
+            throw new BegoException('Partition key attribute name not set');
         }
 
         return $this->condition($this->_partition, '=', $value);
@@ -108,8 +109,8 @@ class Statement
     {
         $options = [];
 
-        $conditions = new Expression($this->_conditions);
-        $filters    = new Expression($this->_filters);
+        $conditions = new Component\Expression($this->_conditions);
+        $filters    = new Component\Expression($this->_filters);
 
         if (!$conditions->isDirty()) {
             throw new BegoException(
@@ -140,7 +141,7 @@ class Statement
 
     public function fetch($pages = 1, $offset = null)
     {
-        return new Resultset(
+        return new Component\Resultset(
             $this->_db->marshaler(), $this->paginator($pages, $offset)->query()
         );
     }
@@ -149,7 +150,7 @@ class Statement
     {
         $conduit = new Conduit($this->_db, $this->compile());
 
-        return new Paginator(
+        return new Component\Paginator(
             $conduit, $pages, $offset
         );
     }

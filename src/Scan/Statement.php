@@ -3,12 +3,12 @@
 namespace Bego\Scan;
 
 use Bego\Exception as BegoException;
+use Bego\Component;
 
 class Statement
 {
     protected $_options = [
         'TableName'         => null,
-        'ScanIndexForward'  => true,
     ];
 
     protected $_partition;
@@ -44,11 +44,6 @@ class Statement
     public function consistent($flag = true)
     {
         return $this->option('ConsistentRead', ($flag === true));
-    }
-
-    public function reverse($flag = true)
-    {
-        return $this->option('ScanIndexForward', ($flag !== true));
     }
 
     public function consumption($flag = true)
@@ -88,24 +83,24 @@ class Statement
     {
         $options = [];
 
-        $filters    = new Expression($this->_filters);
+        $filters    = new Component\Expression($this->_filters);
 
         if ($filters->isDirty()) {
             $options['FilterExpression'] = $filters->statement();
+
+            $options['ExpressionAttributeNames'] = $filters->names();
+
+            $options['ExpressionAttributeValues'] = $this->_db->marshaler()->marshalJson(
+                json_encode($filters->values())
+            );
         }
-
-        $options['ExpressionAttributeNames'] = $filters->names();
-
-        $options['ExpressionAttributeValues'] = $this->_db->marshaler()->marshalJson(
-            json_encode($filters->values())
-        );
 
         return array_merge($this->_options, $options);
     }
 
     public function fetch($pages = 1, $offset = null)
     {
-        return new Resultset(
+        return new Component\Resultset(
             $this->_db->marshaler(), $this->paginator($pages, $offset)->query()
         );
     }
@@ -114,7 +109,7 @@ class Statement
     {
         $conduit = new Conduit($this->_db, $this->compile());
 
-        return new Paginator(
+        return new Component\Paginator(
             $conduit, $pages, $offset
         );
     }

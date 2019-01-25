@@ -120,7 +120,7 @@ class Table
 
     public function scan($index = null)
     {
-        $scan = new Query\Scan($this->_db);
+        $scan = new Scan\Statement($this->_db);
 
         $scan->table($this->_model->name());
 

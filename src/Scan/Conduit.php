@@ -20,7 +20,7 @@ class Conduit
     {
         $options = $this->_getOptions($offset);
 
-        $result = $this->_db->client()->query($options);
+        $result = $this->_db->client()->scan($options);
 
         $this->_log = [
             'offset'    => isset($options['ExclusiveStartKey']) ? $options['ExclusiveStartKey'] : null,

@@ -198,6 +198,25 @@ $results = $music->query()
 echo $results->getCapacityUnitsConsumed();
 ```
 
+## Performing a scan ##
+Basic table scan's are supported. Filter expressions, results and pagination work the same as with queries
+```
+/* Scan the table */
+$results = $table->scan()
+    ->filter('Artist', '=', $artist)
+    ->consistent()
+    ->consumption()
+    ->limit(100)
+    ->fetch();
+```
+
+```
+/* Scan the secondary index */
+$results = $table->scan('My-Global-Index')
+    ->filter('Artist', '=', $artist)
+    ->fetch();
+```
+
 ## Create an item ##
 ```
 /* Create and persist a new item */
