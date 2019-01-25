@@ -2,6 +2,8 @@
 	"name": "fivesqrd/bego",
 	"description": "Simple Document Mapper Library",
 	"require": {
+        "php": ">=7.0.0",
+        "aws/aws-sdk-php": "^3.28"
     },
     "autoload": {
         "psr-4": {
