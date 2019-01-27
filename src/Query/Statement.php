@@ -59,7 +59,7 @@ class Statement
 
     public function limit($value)
     {
-        return $this->option('Limit', $value);
+        return $this->option('Limit', (int) $value);
     }
 
     public function offset($value)
