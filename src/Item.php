@@ -47,12 +47,14 @@ class Item
 
     public function remove($key)
     {
-        if ($this->attribute($key) !== $value) {
-            $this->_diff[] = [
-                'attribute' => $key,
-                'action'    => 'remove'
-            ];
+        if (!array_key_exists($key, $this->_attributes)) {
+            return false;
         }
+
+        $this->_diff[] = [
+            'attribute' => $key,
+            'action'    => 'remove'
+        ];
 
         unset($this->_attributes[$key]);
 

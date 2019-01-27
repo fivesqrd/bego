@@ -122,7 +122,7 @@ class StatementTest extends TestCase
         $subset = [
             'FilterExpression' => '#Artist = :Artist', 
             'ExpressionAttributeValues' => [
-                ':Artist' => ['S' => 'John'],
+                ':Artist'  => ['S' => 'John'],
                 ':TestKey' => ['S' => '12345'],
             ]
         ];
