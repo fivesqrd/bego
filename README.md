@@ -265,21 +265,9 @@ foreach ($results as $item) {
 }
 ```
 
-## Batch update items ##
+## Delete an item ##
 ```
-$results = $music->query()
-    ->key('Bob Dylan')
-    ->condition('SongTitle', '=', 'How many roads')
-    ->filter('Year', '=', '1966')
-    ->fetch(); 
-
-foreach ($results as $item) {
-    $item->set('Year', $item->attribute('Year') + 1);
-}
-
-$result = $music->update($results);
-
-echo $result->getConsumedCapacity();
+$music->delete($item);
 ```
 
 ## Creating a table (experimental) ##

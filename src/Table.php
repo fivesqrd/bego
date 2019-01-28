@@ -102,6 +102,31 @@ class Table
         $item->clean();
     }
 
+    public function delete($item)
+    {
+        /* Generate a key from the table model */
+        $key = $this->_getKey(
+            $this->_model, 
+            $item->attribute($this->_model->partition()), 
+            $item->attribute($this->_model->sort())
+        );
+
+        $result = $this->_db->client()->putItem([
+            'TableName' => $this->_model->name(),
+            'Key'       => $key
+        ]);
+
+        $response = $result->get('@metadata');
+
+        if ($response['statusCode'] != 200) {
+            throw new Exception(
+                "DynamoDb returned unsuccessful response code: {$response['statusCode']}"
+            );
+        }
+
+        return true;
+    }
+
     public function query($index = null)
     {
         $query = new Query\Statement($this->_db);
