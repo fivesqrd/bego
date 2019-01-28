@@ -111,7 +111,7 @@ class Table
             $item->attribute($this->_model->sort())
         );
 
-        $result = $this->_db->client()->putItem([
+        $result = $this->_db->client()->deleteItem([
             'TableName' => $this->_model->name(),
             'Key'       => $key
         ]);
