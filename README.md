@@ -40,7 +40,7 @@ class Music extends Bego\Model
 Instantiate the tables you need throughout your app...
 ```
 $config = [
-    'version' => 'latest',
+    'version' => '2012-08-10',
     'region'  => 'eu-west-1',
     'credentials' => [
         'key'    => 'test',
@@ -262,6 +262,24 @@ $results = $music->query()
 foreach ($results as $item) {
     $item->set('Year', $item->attribute('Year') + 1);
     $music->update($item);
+}
+```
+
+## Conditional update ##
+
+```
+use Bego\Condition;
+
+$conditions = [
+    Condition::beginsWith('Year', '19'),
+    Condition::attributeExists('Year'),
+    Condition::comperator('Year', '=', 1967),
+];
+
+$result = $music->update($item, $conditions);
+
+if ($result) {
+    echo 'Item updated successfully'
 }
 ```
 

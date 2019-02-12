@@ -19,9 +19,9 @@ class AttributeName
         return '#' . $this->_sanitise($this->_attribute);
     }
 
-    public function placeholder()
+    public function placeholder($prefix = null)
     {
-        return ':' . $this->_sanitise($this->_attribute);
+        return ':' . $this->_sanitise($prefix . $this->_attribute);
     }
 
     public function raw()

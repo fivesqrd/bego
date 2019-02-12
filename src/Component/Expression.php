@@ -46,18 +46,7 @@ class Expression
 
     protected function _statement($attribute, $operator)
     {
-        if ($this->_isFunction($operator)) {
-            return "{$operator}({$attribute->key()}, {$attribute->placeholder()})";
-        }
-
         return "{$attribute->key()} {$operator} {$attribute->placeholder()}";
-    }
-
-    protected function _isFunction($value)
-    {
-        $methods = ['begins_with'];
-
-        return in_array($value, $methods);
     }
 
     public function values()

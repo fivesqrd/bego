@@ -2,6 +2,8 @@
 
 namespace Bego;
 
+use Aws\DynamoDb\Exception\DynamoDbException;
+
 class Table
 {
     protected $_db;
@@ -60,16 +62,8 @@ class Table
         return new Item($attributes);
     }
 
-    public function update($item)
+    public function update($item, $conditions = [])
     {
-        /* Create expression values from the attributes changed in the item */
-        $expression = Update\Expression::item($item);
-
-        /* If nothing changed, do nothing */
-        if (!$expression->isDirty()) {
-            return false;
-        }
-
         /* Generate a key from the table model */
         $key = $this->_getKey(
             $this->_model, 
@@ -77,29 +71,46 @@ class Table
             $item->attribute($this->_model->sort())
         );
 
-        /* Marshal the expression values */
-        $values = $this->_db->marshaler()->marshalJson(
-            json_encode($expression->values())
+        $statement = new Update\Statement(
+            $this->_model->name(), $this->_db->marshaler(), Update\Expression::item($item)
         );
 
-        $result = $this->_db->client()->updateItem([
-            'TableName'                 => $this->_model->name(),
-            'Key'                       => $key,
-            'ExpressionAttributeNames'  => $expression->names(),
-            'ExpressionAttributeValues' => $values,
-            'UpdateExpression'          => $expression->statement(),
-        ]);
+        $statement->key($key);
+        $statement->conditions($conditions);
 
-        $response = $result->get('@metadata');
-
-        if ($response['statusCode'] != 200) {
-            throw new Exception(
-                "DynamoDb returned unsuccessful response code: {$response['statusCode']}"
-            );
+        /* If nothing changed, do nothing */
+        if (!$statement->isDirty()) {
+            return false;
         }
 
-        /* Mark item is clean */
-        $item->clean();
+        try {
+
+            $result = $this->_db->client()->updateItem(
+                $statement->compile()
+            );
+
+            $response = $result->get('@metadata');
+
+            if ($response['statusCode'] != 200) {
+                throw new Exception(
+                    "DynamoDb returned unsuccessful response code: {$response['statusCode']}"
+                );
+            }
+
+            /* Mark item is clean */
+            $item->clean();
+
+            return true;
+
+        } catch (DynamoDbException $e) {
+
+            if ($e->getAwsErrorCode() == 'ConditionalCheckFailedException') {
+                return false;
+            }
+
+            throw $e;
+        }
+
     }
 
     public function delete($item)

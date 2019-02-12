@@ -1,6 +1,7 @@
 <?php
-use PHPUnit\Framework\TestCase;
+namespace Query;
 
+use PHPUnit\Framework\TestCase;
 use Bego\Query;
 use Aws\DynamoDb;
 
@@ -32,7 +33,7 @@ class StatementTest extends TestCase
 
     public function testMissingKeyConditionError()
     {
-        $this->expectException(Bego\Exception::class);
+        $this->expectException(\Bego\Exception::class);
 
         $statement = $this->_query
             ->table('Test')
