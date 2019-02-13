@@ -98,7 +98,7 @@ class Statement
             }
 
             /* Mark item is clean */
-            $this->_action->clean();
+            $this->_actions->clean();
 
             return true;
 
