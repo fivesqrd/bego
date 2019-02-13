@@ -32,6 +32,11 @@ class Item
 
     public function set($key, $value)
     {
+        if ($value == '') {
+            /* Empty strings are not allowed, convert to null */
+            $value = null;
+        }
+
         if ($this->attribute($key) !== $value) {
             $this->_diff[] = [
                 'attribute' => $key,
