@@ -2,6 +2,8 @@
 
 namespace Bego\Update;
 
+
+use Aws\DynamoDb\Exception\DynamoDbException;
 use Bego\Exception as BegoException;
 use Bego\Component;
 
@@ -21,18 +23,10 @@ class Statement
 
     protected $_conditions = [];
 
-    protected $_marshaler;
-
-    public function __construct($table, $marshaler, $actions)
+    public function __construct($table, $actions)
     {
-        $this->_marshaler = $marshaler;
         $this->_table = $table;
         $this->_actions = $actions;
-    }
-
-    public function isDirty()
-    {
-        return $this->_actions->isDirty();
     }
 
     public function option($key, $value)
@@ -45,25 +39,33 @@ class Statement
     public function key($value)
     {
         $this->_options['Key'] = $value;
+
+        return $this;
     }
 
     public function conditions($conditions)
     {
         $this->_conditions = $conditions;
+
+        return $this;
     }
 
-    public function compile()
+    public function compile($marshaler)
     {
-        if (!$this->isDirty()) {
+        if (!$this->_actions->isDirty()) {
             throw new BegoException('No update expression values for item');
         }
 
+        $attributes = new AttributeMerge(
+            $this->_actions, $this->_conditions
+        );
+
         $options = [
             'TableName'                 => $this->_table,
-            'UpdateExpression'          => $this->_actions->statement(),
-            'ExpressionAttributeNames'  => $this->_getAttributeNames(),
-            'ExpressionAttributeValues' => $this->_marshaler->marshalJson(
-                json_encode($this->_getAttributeValues())
+            'UpdateExpression'          => $this->_actions->expression(),
+            'ExpressionAttributeNames'  => $attributes->names(),
+            'ExpressionAttributeValues' => $marshaler->marshalJson(
+                json_encode($attributes->values())
             )
         ];
 
@@ -74,26 +76,40 @@ class Statement
         return array_merge($this->_options, $options);
     }
 
-    protected function _getAttributeNames()
+    public function execute($client, $marshaler)
     {
-        $names = $this->_actions->names();
+        try {
 
-        foreach ($this->_conditions as $condition) {
-            $names = array_merge($names, $condition->name());
+            /* If nothing changed, do nothing */
+            if (!$this->_actions->isDirty()) {
+                return null;
+            }
+
+            $result = $client->updateItem(
+                $this->compile($marshaler)
+            );
+
+            $response = $result->get('@metadata');
+
+            if ($response['statusCode'] != 200) {
+                throw new Exception(
+                    "DynamoDb returned unsuccessful response code: {$response['statusCode']}"
+                );
+            }
+
+            /* Mark item is clean */
+            $this->_action->clean();
+
+            return true;
+
+        } catch (DynamoDbException $e) {
+
+            if ($e->getAwsErrorCode() == 'ConditionalCheckFailedException') {
+                return false;
+            }
+
+            throw $e;
         }
-
-        return $names;
-    }
-
-    protected function _getAttributeValues()
-    {
-        $values = $this->_actions->values();
-
-        foreach ($this->_conditions as $condition) {
-            $values = array_merge($values, $condition->values());
-        }
-
-        return $values;
     }
 
     protected function _getConditionExpression()

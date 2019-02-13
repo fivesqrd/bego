@@ -2,8 +2,6 @@
 
 namespace Bego;
 
-use Aws\DynamoDb\Exception\DynamoDbException;
-
 class Table
 {
     protected $_db;
@@ -64,63 +62,22 @@ class Table
 
     public function update($item, $conditions = [])
     {
-        /* Generate a key from the table model */
-        $key = $this->_getKey(
-            $this->_model, 
-            $item->attribute($this->_model->partition()), 
-            $item->attribute($this->_model->sort())
-        );
+        $key = $this->_getKeyFromItem($this->_model, $item);
 
         $statement = new Update\Statement(
-            $this->_model->name(), $this->_db->marshaler(), Update\Expression::item($item)
+            $this->_model->name(), new Update\Action($item)
         );
 
-        $statement->key($key);
-        $statement->conditions($conditions);
-
-        /* If nothing changed, do nothing */
-        if (!$statement->isDirty()) {
-            return false;
-        }
-
-        try {
-
-            $result = $this->_db->client()->updateItem(
-                $statement->compile()
-            );
-
-            $response = $result->get('@metadata');
-
-            if ($response['statusCode'] != 200) {
-                throw new Exception(
-                    "DynamoDb returned unsuccessful response code: {$response['statusCode']}"
-                );
-            }
-
-            /* Mark item is clean */
-            $item->clean();
-
-            return true;
-
-        } catch (DynamoDbException $e) {
-
-            if ($e->getAwsErrorCode() == 'ConditionalCheckFailedException') {
-                return false;
-            }
-
-            throw $e;
-        }
-
+        return $statement
+            ->key($key)
+            ->conditions($conditions)
+            ->execute($this->_db->client(), $this->_db->marshaler());
     }
 
     public function delete($item)
     {
         /* Generate a key from the table model */
-        $key = $this->_getKey(
-            $this->_model, 
-            $item->attribute($this->_model->partition()), 
-            $item->attribute($this->_model->sort())
-        );
+        $key = $this->_getKeyFromItem($this->_model, $item);
 
         $result = $this->_db->client()->deleteItem([
             'TableName' => $this->_model->name(),
@@ -166,6 +123,13 @@ class Table
         }
 
         return $scan;
+    }
+
+    protected function _getKeyFromItem($model, $item)
+    {
+        return $this->_getKey(
+            $model, $item->attribute($model->partition()), $item->attribute($model->sort())
+        );
     }
 
     protected function _getKey($model, $partition, $sort = null)
