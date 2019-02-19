@@ -151,7 +151,7 @@ class Action
     public function expression()
     {
         $actions = array_filter([
-            $this->_getSetStatement(), $this->_getRemoveStatement()
+            $this->_getSetStatement(), $this->_getRemoveStatement(), $this->_getAddStatement(), $this->_getDeleteStatement()
         ]);
 
         if (count($actions) == 0) {
