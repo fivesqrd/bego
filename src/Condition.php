@@ -24,11 +24,24 @@ class Condition
         );
     }
 
-
     public static function attributeExists($attribute)
     {
         return new CompCondition\AttributeExists(
             new AttributeName($attribute)
+        );
+    }
+
+    public static function notContains($attribute, $value)
+    {
+        return new CompCondition\NotContains(
+            new AttributeName($attribute), $value
+        );
+    }
+
+    public static function contains($attribute, $value)
+    {
+        return new CompCondition\Contains(
+            new AttributeName($attribute), $value
         );
     }
 }
