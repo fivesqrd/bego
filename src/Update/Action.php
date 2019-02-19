@@ -72,6 +72,50 @@ class Action
         return 'SET ' . implode(', ', $statements);
     }
 
+    protected function _getAddStatement()
+    {
+        $statements = [];
+
+        foreach ($this->_item->diff() as $diff) {
+
+            if ($diff['action'] != 'add') {
+                continue;
+            }
+
+            $attr = new AttributeName($diff['attribute']);
+
+            $statements[] = "{$attr->key()} {$attr->placeholder()}";
+        }
+
+        if (count($statements) == 0) {
+            return null;
+        }
+
+        return 'ADD ' . implode(', ', $statements);
+    }
+
+    protected function _getDeleteStatement()
+    {
+        $statements = [];
+
+        foreach ($this->_item->diff() as $diff) {
+
+            if ($diff['action'] != 'delete') {
+                continue;
+            }
+
+            $attr = new AttributeName($diff['attribute']);
+
+            $statements[] = "{$attr->key()} {$attr->placeholder()}";
+        }
+
+        if (count($statements) == 0) {
+            return null;
+        }
+
+        return 'DELETE ' . implode(', ', $statements);
+    }
+
     public function attributeNames()
     {
         $names = [];
@@ -92,7 +136,7 @@ class Action
 
         foreach ($this->_item->diff() as $diff) {
 
-            if ($diff['action'] != 'set') {
+            if ($diff['action'] == 'remove') {
                 continue;
             }
 
