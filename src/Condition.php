@@ -44,4 +44,11 @@ class Condition
             new AttributeName($attribute), $value
         );
     }
+
+    public static function in($attribute, $values)
+    {
+        return new CompCondition\In(
+            new AttributeName($attribute), $values
+        );
+    }
 }

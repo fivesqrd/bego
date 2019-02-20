@@ -274,6 +274,7 @@ $conditions = [
     Condition::beginsWith('Year', '19'),
     Condition::attributeExists('Year'),
     Condition::comperator('Year', '=', '1966'),
+    Condition::in('Year', ['1966', '1967']),
 ];
 
 $result = $music->update($item, $conditions);
