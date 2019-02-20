@@ -3,6 +3,7 @@ namespace Query;
 
 use PHPUnit\Framework\TestCase;
 use Bego\Query;
+use Bego\Condition;
 use Aws\DynamoDb;
 
 /**
@@ -79,9 +80,9 @@ class StatementTest extends TestCase
             ->compile();
 
         $subset = [
-            'KeyConditionExpression' => '#TestKey = :TestKey', 
+            'KeyConditionExpression' => '#TestKey = :CmpTestKey', 
             'ExpressionAttributeValues' => [
-                ':TestKey' => ['S' => '12345'],
+                ':CmpTestKey' => ['S' => '12345'],
             ]
         ];
 
@@ -96,7 +97,7 @@ class StatementTest extends TestCase
             ->table('Test')
             ->partition('TestKey')
             ->key('12345')
-            ->filter('Artist', '=', 'John')
+            ->filter(Condition::comperator('Artist', '=', 'John'))
             ->compile();
 
         $subset = [
@@ -117,14 +118,14 @@ class StatementTest extends TestCase
             ->table('Test')
             ->partition('TestKey')
             ->key('12345')
-            ->filter('Artist', '=', 'John')
+            ->filter(Condition::comperator('Artist', '=', 'John'))
             ->compile();
 
         $subset = [
-            'FilterExpression' => '#Artist = :Artist', 
+            'FilterExpression' => '#Artist = :CmpArtist', 
             'ExpressionAttributeValues' => [
-                ':Artist'  => ['S' => 'John'],
-                ':TestKey' => ['S' => '12345'],
+                ':CmpArtist'  => ['S' => 'John'],
+                ':CmpTestKey' => ['S' => '12345'],
             ]
         ];
 

@@ -15,8 +15,6 @@ class Statement
 
     protected $_filters = [];
 
-    protected $_conditions = [];
-
     protected $_db;
 
     public function __construct($db)
@@ -68,13 +66,9 @@ class Statement
         return $this;
     }
 
-    public function filter($name, $operator, $value)
+    public function filter($condition)
     {
-        array_push($this->_filters, [
-            'name'     => $name,
-            'operator' => $operator,
-            'value'    => $value
-        ]);
+        $this->_filters[] = $condition;
 
         return $this;
     }
@@ -83,17 +77,19 @@ class Statement
     {
         $options = [];
 
-        $filters    = new Component\Expression($this->_filters);
-
-        if ($filters->isDirty()) {
-            $options['FilterExpression'] = $filters->statement();
-
-            $options['ExpressionAttributeNames'] = $filters->names();
-
-            $options['ExpressionAttributeValues'] = $this->_db->marshaler()->marshalJson(
-                json_encode($filters->values())
-            );
+        if (empty($this->_filters)) {
+            return $this->_options;
         }
+
+        $attributes = new AttributeMerge($this->_filters);
+
+        $options = [
+            'FilterExpression'          => $this->_createAndExpression($this->_filters),
+            'ExpressionAttributeNames'  => $attributes->names(),
+            'ExpressionAttributeValues' => $this->_db->marshaler()->marshalJson(
+                json_encode($attributes->values())
+            )
+        ];
 
         return array_merge($this->_options, $options);
     }
@@ -112,5 +108,16 @@ class Statement
         return new Component\Paginator(
             $conduit, $pages, $offset
         );
+    }
+
+    protected function _createAndExpression($conditions)
+    {
+        $statements = [];
+
+        foreach ($conditions as $condition) {
+            $statements[] = $condition->statement();
+        }
+
+        return implode(' and ', $statements);
     }
 }

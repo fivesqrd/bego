@@ -4,6 +4,7 @@ namespace Bego\Query;
 
 use Bego\Exception as BegoException;
 use Bego\Component;
+use Bego\Condition;
 
 class Statement
 {
@@ -80,61 +81,49 @@ class Statement
             throw new BegoException('Partition key attribute name not set');
         }
 
-        return $this->condition($this->_partition, '=', $value);
+        return $this->condition(
+            Condition::comperator($this->_partition, '=', $value)
+        );
     }
 
-    public function filter($name, $operator, $value)
+    public function filter($condition)
     {
-        array_push($this->_filters, [
-            'name'     => $name,
-            'operator' => $operator,
-            'value'    => $value
-        ]);
+        $this->_filters[] = $condition;
 
         return $this;
     }
 
-    public function condition($name, $operator, $value)
+    public function condition($condition)
     {
-        array_push($this->_conditions, [
-            'name'     => $name,
-            'operator' => $operator,
-            'value'    => $value
-        ]);
+        $this->_conditions[] = $condition;
         
         return $this;
     }
 
     public function compile()
     {
-        $options = [];
 
-        $conditions = new Component\Expression($this->_conditions);
-        $filters    = new Component\Expression($this->_filters);
-
-        if (!$conditions->isDirty()) {
+        if (empty($this->_conditions)) {
             throw new BegoException(
                 'A condition expression is required to perform a query'
             );
         }
 
-        $options['KeyConditionExpression'] = $conditions->statement();
+        $attributes = new AttributeMerge(
+            array_merge($this->_filters, $this->_conditions)
+        );
 
-        if ($filters->isDirty()) {
-            $options['FilterExpression'] = $filters->statement();
+        $options = [
+            'KeyConditionExpression'    => $this->_createAndExpression($this->_conditions),
+            'ExpressionAttributeNames'  => $attributes->names(),
+            'ExpressionAttributeValues' => $this->_db->marshaler()->marshalJson(
+                json_encode($attributes->values())
+            )
+        ];
+
+        if (!empty($this->_filters)) {
+            $options['FilterExpression'] = $this->_createAndExpression($this->_filters);
         }
-
-        $options['ExpressionAttributeNames'] = array_merge(
-            $filters->names(), $conditions->names()
-        );
-
-        $values = array_merge(
-            $filters->values(), $conditions->values()
-        );
-
-        $options['ExpressionAttributeValues'] = $this->_db->marshaler()->marshalJson(
-            json_encode($values)
-        );
 
         return array_merge($this->_options, $options);
     }
@@ -153,5 +142,16 @@ class Statement
         return new Component\Paginator(
             $conduit, $pages, $offset
         );
+    }
+
+    protected function _createAndExpression($conditions)
+    {
+        $statements = [];
+
+        foreach ($conditions as $condition) {
+            $statements[] = $condition->statement();
+        }
+
+        return implode(' and ', $statements);
     }
 }
