@@ -31,6 +31,13 @@ class Condition
         );
     }
 
+    public static function attributeNotExists($attribute)
+    {
+        return new CompCondition\AttributeNotExists(
+            new AttributeName($attribute)
+        );
+    }
+
     public static function notContains($attribute, $value)
     {
         return new CompCondition\NotContains(

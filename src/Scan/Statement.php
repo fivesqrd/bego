@@ -86,10 +86,13 @@ class Statement
         $options = [
             'FilterExpression'          => $this->_createAndExpression($this->_filters),
             'ExpressionAttributeNames'  => $attributes->names(),
-            'ExpressionAttributeValues' => $this->_db->marshaler()->marshalJson(
-                json_encode($attributes->values())
-            )
         ];
+
+        if (count($attributes->values()) > 0) {
+            $option['ExpressionAttributeValues'] = $this->_db->marshaler()->marshalJson(
+                json_encode($attributes->values())
+            );
+        }
 
         return array_merge($this->_options, $options);
     }

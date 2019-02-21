@@ -42,19 +42,18 @@ class Table
         );
     }
 
-    public function put($attributes)
+    public function put($attributes, $conditions = [])
     {
-        $result = $this->_db->client()->putItem([
-            'TableName' => $this->_model->name(),
-            'Item'      => $this->_db->marshaler()->marshalItem($attributes)
-        ]);
+        $statement = new Put\Statement(
+            $this->_model->name(), $attributes
+        );
 
-        $response = $result->get('@metadata');
+        $result = $statement
+            ->conditions($conditions)
+            ->execute($this->_db->client(), $this->_db->marshaler());
 
-        if ($response['statusCode'] != 200) {
-            throw new Exception(
-                "DynamoDb returned unsuccessful response code: {$response['statusCode']}"
-            );
+        if (!$result) {
+            return false;
         }
 
         return new Item($attributes);
