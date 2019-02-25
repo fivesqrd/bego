@@ -11,15 +11,15 @@ class Paginator
         'trips'  => 0
     ];
 
-    protected $_pageLimit = 1;
+    protected $_pages = 1;
 
     protected $_trace = [];
 
-    public function __construct($conduit, $limit = 1, $offset = null)
+    public function __construct($conduit, $pages = 1, $offset = null)
     {
         $this->_conduit = $conduit;
         $this->_state['offset'] = $offset;
-        $this->_pageLimit = $limit;
+        $this->_pages = $pages;
     }
 
     public function query()
@@ -42,14 +42,16 @@ class Paginator
             /* Append last result to previous */
             $aggregator->append($result);
 
+            $this->_state['items'] = $result['Count'];
+
         } while (
             $this->_isAnotherTripRequired($this->_state) === true
         );
 
         $meta = [
-            'X-Query-Time'  => microtime(true) - $start,
-            'X-Query-Count' => $this->_state['trips'],
-            'X-Query-Limit' => $this->_pageLimit
+            'X-Query-Time'      => microtime(true) - $start,
+            'X-Query-Count'     => $this->_state['trips'],
+            'X-Query-PageLimit' => $this->_pages
         ];
 
         return array_merge(
@@ -59,6 +61,11 @@ class Paginator
 
     protected function _isAnotherTripRequired($state)
     {
+        /* If the item limit imposed on the query is reached, don't attempt another trip */
+        if ($this->_conduit->option('Limit') && $state['items'] >= $this->_conduit->option('Limit')) {
+            return false;
+        }
+
         /* If no more results available, don't attempt another trip */
         if ($this->_isPageLimitReached($state['trips'])) {
             return false;
@@ -74,12 +81,12 @@ class Paginator
 
     protected function _isPageLimitReached($trips)
     {
-        if (!$this->_pageLimit) {
+        if (!$this->_pages) {
             return false;
         }
 
         /* If a page limit is definedd ensure that we don't exceed it */
-        if ($trips < $this->_pageLimit) {
+        if ($trips < $this->_pages) {
             return false;
         }
 
