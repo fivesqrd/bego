@@ -89,7 +89,7 @@ class Statement
         ];
 
         if (count($attributes->values()) > 0) {
-            $option['ExpressionAttributeValues'] = $this->_db->marshaler()->marshalJson(
+            $options['ExpressionAttributeValues'] = $this->_db->marshaler()->marshalJson(
                 json_encode($attributes->values())
             );
         }
