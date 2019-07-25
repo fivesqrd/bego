@@ -38,7 +38,9 @@ class Table
         ]);
 
         return new Item(
-            $this->_db->marshaler()->unmarshalItem($result['Item'])
+            $result->hasKey('Item') 
+                ? $this->_db->marshaler()->unmarshalItem($result->get('Item'))
+                : []
         );
     }
 

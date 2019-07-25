@@ -14,11 +14,6 @@ class Item
         $this->_init = $attributes;
     }
 
-    public function isset($key)
-    {
-        return array_key_exists($key, $this->_attributes);
-    }
-
     public function attribute($key)
     {
         //TODO: support dot notation of nested attributes
@@ -121,8 +116,18 @@ class Item
         $this->_diff = [];
     }
 
+    public function isSet($key)
+    {
+        return array_key_exists($key, $this->_attributes);
+    }
+
     public function isDirty()
     {
         return count($this->_diff) > 0;
+    }
+
+    public function isEmpty()
+    {
+        return empty($this->_attributes);
     }
 }

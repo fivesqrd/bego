@@ -234,16 +234,28 @@ $item = $music->fetch(
     'Bob Dylan', 'How many roads'
 );
 
+if ($item->isEmpty()) {
+    throw new \Exception("Requested record could not be found");
+}
+
+if ($item->isSet('hit')) {
+    echo "{$item->attribute('SongTitle')} is a hit";
+}
+
+echo $item->attribute('Id');
+```
+
+```
 /* Perform a consistent read */
 $item = $music->fetch(
     'Bob Dylan', 'How many roads', true
 );
 
-echo $item->attribute('Id');
-
-if ($item->isset('hit')) {
-    echo "{$item->attribute('SongTitle')} is a hit";
+if ($item->isEmpty()) {
+    throw new \Exception("Requested record could not be found");
 }
+
+echo $item->attribute('Id');
 ```
 
 ## Update an item ##
