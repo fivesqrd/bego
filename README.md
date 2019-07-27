@@ -277,6 +277,25 @@ foreach ($results as $item) {
 }
 ```
 
+Making use of an item's magic properties instead of set() and attribute()
+```
+/* Update an item */
+$item->Year = 1966;
+
+$result = $music->update($item);
+
+$results = $music->query()
+    ->key('Bob Dylan')
+    ->condition(Condition::comperator('SongTitle', '=', 'How many roads'))
+    ->filter(Condition::comperator('Year', '=', '1966'))
+    ->fetch(); 
+
+foreach ($results as $item) {
+    $item->Year = $item->Year + 1;
+    $music->update($item);
+}
+```
+
 ## Conditional update ##
 
 ```

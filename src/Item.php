@@ -11,14 +11,13 @@ class Item
     public function __construct($attributes = [])
     {
         $this->_attributes = $attributes;
-        $this->_init = $attributes;
     }
 
     public function attribute($key)
     {
         //TODO: support dot notation of nested attributes
         
-        if (!$this->isset($key)) {
+        if (!$this->isSet($key)) {
             return null;
         }
 
@@ -62,6 +61,9 @@ class Item
         return $this;
     }
 
+    /**
+     * Delete a member from a list
+     */
     public function delete($key, $value)
     {
         if (!is_array($this->attribute($key))) {
@@ -85,6 +87,9 @@ class Item
         return $this;
     }
 
+    /**
+     * Remote attribute from item
+     */
     public function remove($key)
     {
         if (!array_key_exists($key, $this->_attributes)) {
@@ -129,5 +134,25 @@ class Item
     public function isEmpty()
     {
         return empty($this->_attributes);
+    }
+
+    public function __get($key) 
+    {
+        return $this->attribute($key);
+    }
+
+    public function __set($key, $value)
+    {
+        $this->set($key, $value);
+    }
+
+    public function __isset($key)
+    {
+        return $this->isSet($key);
+    }
+
+    public function __unset($key)
+    {
+        return $this->remove($key);
     }
 }

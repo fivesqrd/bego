@@ -30,7 +30,7 @@ class ItemTest extends TestCase
         $this->assertFalse($item->isEmpty());
     }
 
-    public function testAttribute()
+    public function testAttributeConstructor()
     {
         $item = new Bego\Item([
             'Id'        => 1,
@@ -43,6 +43,36 @@ class ItemTest extends TestCase
         );
     }
 
+    public function testAttributeUpdate()
+    {
+        $item = new Bego\Item([
+            'Id'        => 1,
+            'Artist'    => 'John Lennon',
+            'SongTitle' => 'How many roads must a man walk down'
+        ]);
+
+        $item->set('Artist', 'Bob Dylan');
+
+        $this->assertEquals(
+            'Bob Dylan', $item->attribute('Artist')
+        );
+    }
+
+    public function testMagicAttributeUpdate()
+    {
+        $item = new Bego\Item([
+            'Id'        => 1,
+            'Artist'    => 'John Lennon',
+            'SongTitle' => 'How many roads must a man walk down'
+        ]);
+
+        $item->Artist = 'Bob Dylan';
+
+        $this->assertEquals(
+            'Bob Dylan', $item->attribute('Artist')
+        );
+    }
+
     public function testIsSet()
     {
         $item = new Bego\Item([
@@ -52,6 +82,17 @@ class ItemTest extends TestCase
         ]);
 
         $this->assertTrue($item->isSet('Artist'));
+    }
+
+    public function testMagicIsSet()
+    {
+        $item = new Bego\Item([
+            'Id'        => 1,
+            'Artist'    => 'John Lennon',
+            'SongTitle' => 'How many roads must a man walk down'
+        ]);
+
+        $this->assertTrue(isset($item->Artist));
     }
 
     public function testIsNotSet()
@@ -74,6 +115,21 @@ class ItemTest extends TestCase
         ]);
 
         $item->remove('SongTitle');
+
+        $this->assertEquals(
+            ['Id' => 1, 'Artist' => 'John Lennon'], $item->attributes()
+        );
+    }
+
+    public function testMagicUnset()
+    {
+        $item = new Bego\Item([
+            'Id'        => 1,
+            'Artist'    => 'John Lennon',
+            'SongTitle' => 'How many roads must a man walk down'
+        ]);
+
+        unset($item->SongTitle);
 
         $this->assertEquals(
             ['Id' => 1, 'Artist' => 'John Lennon'], $item->attributes()
