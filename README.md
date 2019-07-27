@@ -110,7 +110,7 @@ $results = $music->query()
     ->fetch(); 
 
 foreach ($results as $item) {
-    echo "{$item['Id']}\n";
+    echo "{$item->attribute('Id')}\n";
 }
 
 echo "{$results->count()} items in result set\n";

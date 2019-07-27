@@ -31,6 +31,15 @@ class Conduit
         return $result;
     }
 
+    public function option($key)
+    {
+        if (!array_key_exists($key, $this->_options)) {
+            return null;
+        }
+
+        return $this->_options[$key];
+    }
+
     public function getLastLog()
     {
         return $this->_log;
