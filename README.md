@@ -46,7 +46,7 @@ $config = [
         'key'    => 'test',
         'secret' => 'test',
     ],
-]);
+];
 
 $db = new Bego\Database(
     new Aws\DynamoDb\DynamoDbClient($config), new Aws\DynamoDb\Marshaler()

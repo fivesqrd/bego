@@ -2,8 +2,6 @@
 
 use PHPUnit\Framework\TestCase;
 use Bego;
-use Bego\Component;
-use Aws\DynamoDb;
 
 /**
  * @covers \Bego\Query

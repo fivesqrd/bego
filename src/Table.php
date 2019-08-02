@@ -20,13 +20,9 @@ class Table
             Create\Factory::model($this->_model, $spec)->compile()
         );
 
-        $response = $result->get('@metadata');
-
-        if ($response['statusCode'] != 200) {
-            throw new Exception(
-                "DynamoDb returned unsuccessful response code: {$response['statusCode']}"
-            );
-        }
+        $this->_isResponseValid(
+            $result->get('@metadata'), 200
+        );
     }
 
     public function fetch($partition, $sort = null, $consistent = false)
@@ -85,45 +81,23 @@ class Table
             'Key'       => $key
         ]);
 
-        $response = $result->get('@metadata');
-
-        if ($response['statusCode'] != 200) {
-            throw new Exception(
-                "DynamoDb returned unsuccessful response code: {$response['statusCode']}"
-            );
-        }
-
-        return true;
+        return $this->_isResponseValid(
+            $result->get('@metadata'), 200
+        );
     }
 
     public function query($index = null)
     {
-        $query = new Query\Statement($this->_db);
-
-        $query->table($this->_model->name());
-
-        if ($index) {
-            $spec = $this->_model->index($index);
-            $query->index($index);
-        }
-
-        return $query->partition(
-            isset($spec['key']) ? $spec['key'] : $this->_model->partition()
-        );
+        return $index === null 
+            ? Query\Factory::table($this->_db, $this->_model)
+            : Query\Factory::index($this->_db, $this->_model, $index);
     }
 
     public function scan($index = null)
     {
-        $scan = new Scan\Statement($this->_db);
-
-        $scan->table($this->_model->name());
-
-        if ($index) {
-            $spec = $this->_model->index($index);
-            $scan->index($index);
-        }
-
-        return $scan;
+        return $index === null 
+            ? Scan\Factory::table($this->_db, $this->_model)
+            : Scan\Factory::index($this->_db, $this->_model, $index);
     }
 
     protected function _getKeyFromItem($model, $item)
@@ -142,5 +116,16 @@ class Table
         }
 
         return $keys;
+    }
+
+    protected function _isResponseValid($response, $expected)
+    {
+        if ($response['statusCode'] == $expected) {
+            return true;
+        }
+
+        throw new Exception(
+            "DynamoDb returned unsuccessful response code: {$response['statusCode']}"
+        );
     }
 }
