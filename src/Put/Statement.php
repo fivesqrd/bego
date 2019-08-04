@@ -5,6 +5,7 @@ namespace Bego\Put;
 
 use Aws\DynamoDb\Exception\DynamoDbException;
 use Bego\Exception as BegoException;
+use Bego\Component\Member;
 use Bego\Component;
 
 class Statement
@@ -14,16 +15,24 @@ class Statement
         'Item'          => null,
     ];
 
+    protected $_db;
+
     protected $_table;
 
     protected $_attributes;
 
     protected $_conditions = [];
 
-    public function __construct($table, $attributes)
+    public function __construct($db, $attributes)
     {
-        $this->_table = $table;
+        $this->_db = $db;
         $this->_attributes = $attributes;
+    }
+
+    public function table($value)
+    {
+        $this->_options['TableName'] = $value;
+        return $this;
     }
 
     public function conditions($conditions)
@@ -33,34 +42,38 @@ class Statement
         return $this;
     }
 
-    public function compile($marshaler)
+    public function compile()
     {
-        $options = [
-            'TableName' => $this->_table,
-            'Item'      => $marshaler->marshalJson(
-                json_encode($this->_attributes)
-            ),
+        $this->_options['Item'] = $this->_db->marshaler()->marshalJson(
+            json_encode($this->_attributes)
+        );
+
+        $expressions = [
+            new Member\ConditionExpression($this->_conditions),
         ];
 
-        if (count($this->_conditions) > 0) {
-            $attributes = new AttributeMerge($this->_conditions);
+        $attributes = [
+            new Member\AttributeNames($expressions),
+            new Member\AttributeValues($this->_db->marshaler(), $expressions)
+        ];
 
-            $options['ExpressionAttributeNames'] = $attributes->names();
-            $options['ConditionExpression'] = $this->_getAndExpression(
-                $this->_conditions
-            );
+        foreach (array_merge($expressions, $attributes) as $member) {
+            
+            if (!$member->isDefined()) {
+                continue;
+            }
+
+            $this->_options[$member->getParameterKey()] = $member->statement(); 
         }
 
-        return array_merge($this->_options, $options);
+        return $this->_options;
     }
 
-    public function execute($client, $marshaler)
+    public function execute()
     {
         try {
 
-            $result = $client->putItem(
-                $this->compile($marshaler)
-            );
+            $result = $client->putItem($this->compile());
 
             $response = $result->get('@metadata');
 
@@ -80,16 +93,5 @@ class Statement
 
             throw $e;
         }
-    }
-
-    protected function _getAndExpression($conditions)
-    {
-        $statements = [];
-
-        foreach ($conditions as $condition) {
-            $statements[] = $condition->statement();
-        }
-
-        return implode(' and ', $statements);
     }
 }

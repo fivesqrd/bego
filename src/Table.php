@@ -42,13 +42,10 @@ class Table
 
     public function put($attributes, $conditions = [])
     {
-        $statement = new Put\Statement(
-            $this->_model->name(), $attributes
-        );
-
-        $result = $statement
+        $result = (new Put\Statement($this->_db, $attributes))
+            ->table($this->_model->name())
             ->conditions($conditions)
-            ->execute($this->_db->client(), $this->_db->marshaler());
+            ->execute();
 
         if (!$result) {
             return false;

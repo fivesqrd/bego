@@ -16,7 +16,13 @@ class AttributeValues
 
     public function isDefined()
     {
-        return count($this->_expressions) > 0;
+        foreach ($this->_expressions as $expression) {
+            if ($expression->isDefined()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function getParameterKey()

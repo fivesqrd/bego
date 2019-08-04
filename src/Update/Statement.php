@@ -90,9 +90,7 @@ class Statement
                 return null;
             }
 
-            $result = $this->_db->updateItem(
-                $this->compile($this->_db->marshaler())
-            );
+            $result = $this->_db->updateItem($this->compile());
 
             $response = $result->get('@metadata');
 
