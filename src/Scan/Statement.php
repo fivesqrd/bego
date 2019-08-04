@@ -3,6 +3,7 @@
 namespace Bego\Scan;
 
 use Bego\Exception as BegoException;
+use Bego\Component\Member;
 use Bego\Component;
 
 class Statement
@@ -75,26 +76,29 @@ class Statement
 
     public function compile()
     {
-        $options = [];
-
         if (empty($this->_filters)) {
             return $this->_options;
         }
 
-        $attributes = new AttributeMerge($this->_filters);
-
-        $options = [
-            'FilterExpression'          => $this->_createAndExpression($this->_filters),
-            'ExpressionAttributeNames'  => $attributes->names(),
+        $expressions = [
+            new Member\FilterExpression($this->_filters),
         ];
 
-        if (count($attributes->values()) > 0) {
-            $options['ExpressionAttributeValues'] = $this->_db->marshaler()->marshalJson(
-                json_encode($attributes->values())
-            );
+        $attributes = [
+            new Member\AttributeNames($expressions),
+            new Member\AttributeValues($this->_db->marshaler(), $expressions)
+        ];
+
+        foreach (array_merge($expressions, $attributes) as $member) {
+            
+            if (!$member->isDefined()) {
+                continue;
+            }
+            
+            $this->option($member->getParameterKey(), $member->statement()); 
         }
 
-        return array_merge($this->_options, $options);
+        return $this->_options;
     }
 
     public function fetch($pages = 1, $offset = null)
