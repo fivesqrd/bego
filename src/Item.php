@@ -13,22 +13,55 @@ class Item
         $this->_attributes = $attributes;
     }
 
+    /** 
+     * Return the an attribute's value. If attribute is present exception will be thrown
+     * @param string $key
+     * @return mixed
+     */
+    public function ping($key)
+    {
+        /* todo: support dot notation of nested attributes */
+        
+        if (!array_key_exists($key, $this->_attributes)) {
+            throw new Exception(
+                "Attribute '{$key}' is not present in this item"
+            );
+        }
+
+        return $this->_attributes[$key];
+    }
+
+    /** 
+     * Return the an attribute's value. If attribute is present return value is null
+     * @param string $key
+     * @return mixed
+     */
     public function attribute($key)
     {
-        //TODO: support dot notation of nested attributes
+        /* todo: support dot notation of nested attributes */
         
-        if (!$this->isSet($key)) {
+        if (!array_key_exists($key, $this->_attributes)) {
             return null;
         }
 
         return $this->_attributes[$key];
     }
 
+    /**
+     * Set an attribute's value
+     * @param string $key
+     * @param mixed $value
+     */
     public function set($key, $value)
     {
         if ($value == '') {
             /* Empty strings are not allowed, convert to null */
             $value = null;
+        }
+
+        if (!$this->isSet($key)) {
+            /* First add an empty attribute to this item */
+            $this->_attributes[$key] = null;
         }
 
         if ($this->attribute($key) !== $value) {
@@ -44,6 +77,9 @@ class Item
         return $this;
     }
 
+    /**
+     * Add a member to a list attribute
+     */
     public function add($key, $value)
     {
         $this->_diff[] = [
@@ -62,7 +98,7 @@ class Item
     }
 
     /**
-     * Delete a member from a list
+     * Delete a member from a list attribute
      */
     public function delete($key, $value)
     {
@@ -123,7 +159,15 @@ class Item
 
     public function isSet($key)
     {
-        return array_key_exists($key, $this->_attributes);
+        if (!array_key_exists($key, $this->_attributes)) {
+            return false;
+        }
+
+        if ($this->_attributes[$key] === null) {
+            return false;
+        }
+
+        return true;
     }
 
     public function isDirty()

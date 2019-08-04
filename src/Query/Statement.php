@@ -3,6 +3,7 @@
 namespace Bego\Query;
 
 use Bego\Exception as BegoException;
+use Bego\Component\Member;
 use Bego\Component;
 use Bego\Condition;
 
@@ -18,6 +19,8 @@ class Statement
     protected $_filters = [];
 
     protected $_conditions = [];
+
+    protected $_projection = [];
 
     protected $_db;
 
@@ -68,6 +71,30 @@ class Statement
         return $this->option('ExclusiveStartKey', $value);
     }
 
+    /**
+     * Accept an array of attribute names in ProjectionExpression
+     * @param array $attributeNames
+     * @return Statement
+     */
+    public function projection($values)
+    {
+        if (is_string($values)) {
+            $values = [$values];
+        }
+
+        if (!is_array($values)) {
+            throw new BegoException(
+                'Projection values are expected to by of type array'
+            );
+        }
+
+        foreach ($values as $value) {
+            $this->_projection[] = new Component\AttributeName($value);
+        }
+
+        return $this;
+    }
+
     public function partition($value)
     {
         $this->_partition = $value;
@@ -102,30 +129,33 @@ class Statement
 
     public function compile()
     {
-
-        if (empty($this->_conditions)) {
+       if (empty($this->_conditions)) {
             throw new BegoException(
-                'A condition expression is required to perform a query'
+                'A key condition expression is required to perform a query'
             );
         }
 
-        $attributes = new AttributeMerge(
-            array_merge($this->_filters, $this->_conditions)
-        );
-
-        $options = [
-            'KeyConditionExpression'    => $this->_createAndExpression($this->_conditions),
-            'ExpressionAttributeNames'  => $attributes->names(),
-            'ExpressionAttributeValues' => $this->_db->marshaler()->marshalJson(
-                json_encode($attributes->values())
-            )
+        $expressions = [
+            new Member\KeyConditionExpression($this->_conditions),
+            new Member\FilterExpression($this->_filters),
+            new Member\ProjectionExpression($this->_projection),
         ];
 
-        if (!empty($this->_filters)) {
-            $options['FilterExpression'] = $this->_createAndExpression($this->_filters);
+        $attributes = [
+            new Member\AttributeNames($expressions),
+            new Member\AttributeValues($this->_db->marshaler(), $expressions)
+        ];
+
+        foreach (array_merge($expressions, $attributes) as $member) {
+            
+            if (!$member->isDefined()) {
+                continue;
+            }
+            
+            $this->option($member->getParameterKey(), $member->statement()); 
         }
 
-        return array_merge($this->_options, $options);
+        return $this->_options;
     }
 
     public function fetch($pages = 1, $offset = null)
@@ -142,16 +172,5 @@ class Statement
         return new Component\Paginator(
             $conduit, $pages, $offset
         );
-    }
-
-    protected function _createAndExpression($conditions)
-    {
-        $statements = [];
-
-        foreach ($conditions as $condition) {
-            $statements[] = $condition->statement();
-        }
-
-        return implode(' and ', $statements);
     }
 }

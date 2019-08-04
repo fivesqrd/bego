@@ -100,6 +100,17 @@ $results = $music->query()
     ->fetch(); 
 ```
 
+### Projecting attributes ###
+To get just some, rather than all of the attributes, use a projection expression.
+```
+$results = $music->query()
+    ->key('Bob Dylan')
+    ->projection(['Year', 'SongTitle'])
+    ->condition(Condition::beginsWith('SongTitle', 'How'))
+    ->filter(Condition::comperator('Year', '=', '1966'))
+    ->fetch(); 
+```
+
 ### Working with result sets ###
 The result set object implements the Iterator interface and canned by used straight way. It provived some handy methods as well.
 ```
@@ -258,10 +269,25 @@ if ($item->isEmpty()) {
 echo $item->attribute('Id');
 ```
 
+## Working with item's attribute values ##
+```
+/* Return value if attribute exists, otherwise NULL */
+echo $item->attribute('Artist');
+echo $item->Artist; //shorthand
+
+/* Return value if attribute exists, otherwise throw exception */
+echo $item->ping('Artist');
+
+/* Checking if an attribute exists and not empty */
+echo $item->isSet('Artist') ? 'Yes' : 'No';
+echo isset($item->Artist) ? 'Yes' : 'No'; //shorthand
+```
+
 ## Update an item ##
 ```
 /* Update an item */
 $item->set('Year', 1966);
+$item->Year = 1966; //shorthand
 
 $result = $music->update($item);
 

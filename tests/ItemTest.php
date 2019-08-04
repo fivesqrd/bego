@@ -1,7 +1,6 @@
 <?php
 
 use PHPUnit\Framework\TestCase;
-use Bego;
 
 /**
  * @covers \Bego\Query
@@ -102,6 +101,19 @@ class ItemTest extends TestCase
         ]);
 
         $this->assertFalse($item->isSet('Year'));
+    }
+
+    public function testPingIsNotSet()
+    {
+        $this->expectException(\Bego\Exception::class);
+
+        $item = new Bego\Item([
+            'Id'        => 1,
+            'Artist'    => 'John Lennon',
+            'SongTitle' => 'How many roads must a man walk down'
+        ]);
+
+        $item->ping('Year');
     }
 
     public function testRemove()

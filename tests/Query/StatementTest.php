@@ -91,6 +91,52 @@ class StatementTest extends TestCase
         );
     }
 
+    public function testCondidtionExpression()
+    {
+        $statement = $this->_query
+            ->table('Test')
+            ->partition('TestKey')
+            ->key('12345')
+            ->condition(Condition::comperator('Artist', '=', 'John'))
+            ->compile();
+
+        $subset = [
+            'KeyConditionExpression' => '#TestKey = :CmpTestKey and #Artist = :CmpArtist', 
+            'ExpressionAttributeValues' => [
+                ':CmpTestKey' => ['S' => '12345'],
+                ':CmpArtist' => ['S' => 'John'],
+            ]
+        ];
+
+        $this->assertArraySubset(
+            $subset, $statement
+        );
+    }
+
+    public function testCondidtionExpressionWithAnd()
+    {
+        $statement = $this->_query
+            ->table('Test')
+            ->partition('TestKey')
+            ->key('12345')
+            ->condition(Condition::comperator('Artist', '=', 'John'))
+            ->condition(Condition::comperator('Year', '=', 1966))
+            ->compile();
+
+        $subset = [
+            'KeyConditionExpression' => '#TestKey = :CmpTestKey and #Artist = :CmpArtist and #Year = :CmpYear', 
+            'ExpressionAttributeValues' => [
+                ':CmpTestKey' => ['S' => '12345'],
+                ':CmpArtist' => ['S' => 'John'],
+                ':CmpYear' => ['N' => '1966'],
+            ]
+        ];
+
+        $this->assertArraySubset(
+            $subset, $statement
+        );
+    }
+
     public function testFilterExpressionAttributeName()
     {
         $statement = $this->_query
@@ -131,6 +177,21 @@ class StatementTest extends TestCase
 
         $this->assertArraySubset(
             $subset, $statement
+        );
+    }
+
+    public function testProjectionMatches()
+    {
+        $statement = $this->_query
+            ->table('Test')
+            ->partition('TestKey')
+            ->key('12345')
+            ->projection(['TestKey', 'Artist'])
+            ->reverse(false)
+            ->compile();
+
+        $this->assertArraySubset(
+            ['ProjectionExpression' => '#TestKey, #Artist'], $statement
         );
     }
 }

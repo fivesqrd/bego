@@ -1,19 +1,19 @@
 <?php
 
-namespace Bego\Query;
+namespace Bego\Update;
 
-class AttributeMerge
+class Attributes
 {
-    protected $_conditions;
 
-    public function __construct($conditions)
+    public function __construct($actions, $conditions)
     {
+        $this->_actions = $actions;
         $this->_conditions = $conditions;
     }
 
     public function names()
     {
-        $names = [];
+        $names = $this->_actions->attributeNames();
 
         foreach ($this->_conditions as $condition) {
             $names = array_merge($names, $condition->name());
@@ -24,7 +24,7 @@ class AttributeMerge
 
     public function values()
     {
-        $values = [];
+        $values = $this->_actions->attributeValues();
 
         foreach ($this->_conditions as $condition) {
             $values = array_merge($values, $condition->values());
