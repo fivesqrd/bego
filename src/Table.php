@@ -59,16 +59,11 @@ class Table
 
     public function update($item, $conditions = [])
     {
-        $key = $this->_getKeyFromItem($this->_model, $item);
-
-        $statement = new Update\Statement(
-            $this->_model->name(), new Update\Action($item)
-        );
-
-        return $statement
-            ->key($key)
+        return (new Update\Statement($this->_db, $item))
+            ->table($this->_model->name())
+            ->key($this->_getKeyFromItem($this->_model, $item))
             ->conditions($conditions)
-            ->execute($this->_db->client(), $this->_db->marshaler());
+            ->execute();
     }
 
     public function delete($item)

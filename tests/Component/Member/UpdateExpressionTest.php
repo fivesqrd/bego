@@ -1,15 +1,15 @@
 <?php
-namespace Update;
+namespace Component\Member;
 
 use PHPUnit\Framework\TestCase;
 use Bego;
-use Bego\Component;
+use Bego\Component\Member\UpdateExpression;
 use Aws\DynamoDb;
 
 /**
  * @covers \Bego\Query
  */
-class ActionTest extends TestCase
+class UpdateExpressionTest extends TestCase
 {
     protected $_db;
 
@@ -23,18 +23,18 @@ class ActionTest extends TestCase
 
         $item->set('Artist', 'Bob Dylan');
 
-        $action = new Bego\Update\Action($item);
+        $action = new UpdateExpression($item);
 
         $this->assertEquals(
-            'SET #Artist = :Artist', $action->expression()
+            'SET #Artist = :Artist', $action->statement()
         );
 
         $this->assertEquals(
-            ['#Artist' => 'Artist'], $action->attributeNames()
+            ['#Artist' => 'Artist'], $action->names()
         );
 
         $this->assertEquals(
-            [':Artist' => 'Bob Dylan'], $action->attributeValues()
+            [':Artist' => 'Bob Dylan'], $action->values()
         );
     }
 
@@ -49,18 +49,18 @@ class ActionTest extends TestCase
         $item->set('Artist', 'Bob Dylan');
         $item->set('SongTitle', 'The Hurricane');
 
-        $action = new Bego\Update\Action($item);
+        $action = new UpdateExpression($item);
 
         $this->assertEquals(
-            'SET #Artist = :Artist, #SongTitle = :SongTitle', $action->expression()
+            'SET #Artist = :Artist, #SongTitle = :SongTitle', $action->statement()
         );
 
         $this->assertEquals(
-            ['#Artist' => 'Artist', '#SongTitle' => 'SongTitle'], $action->attributeNames()
+            ['#Artist' => 'Artist', '#SongTitle' => 'SongTitle'], $action->names()
         );
 
         $this->assertEquals(
-            [':Artist' => 'Bob Dylan', ':SongTitle' => 'The Hurricane'], $action->attributeValues()
+            [':Artist' => 'Bob Dylan', ':SongTitle' => 'The Hurricane'], $action->values()
         );
     }
 }

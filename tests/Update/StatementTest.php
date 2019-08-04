@@ -41,16 +41,14 @@ class StatementTest extends TestCase
 
         $item->set('Artist', 'Bob Dylan');
 
-        $statement = new Bego\Update\Statement(
-            'Songs', new Bego\Update\Action($item)
-        );
+        $statement = new Bego\Update\Statement($this->_db, $item);
 
         $subset = [
             'ExpressionAttributeNames' => ['#Artist' => 'Artist'],
         ];
 
         $this->assertArraySubset(
-            $subset, $statement->compile($this->_db->marshaler())
+            $subset, $statement->compile()
         );
     }
 
@@ -66,9 +64,7 @@ class StatementTest extends TestCase
         $item->set('Artist', 'Bob Dylan');
         $item->set('Year', 1967);
 
-        $statement = new Bego\Update\Statement(
-            'Songs', new Bego\Update\Action($item)
-        );
+        $statement = new Bego\Update\Statement($this->_db, $item);
 
         $subset = [
             'ExpressionAttributeValues' => [
@@ -78,7 +74,7 @@ class StatementTest extends TestCase
         ];
 
         $this->assertArraySubset(
-            $subset, $statement->compile($this->_db->marshaler())
+            $subset, $statement->compile()
         );
     }
 
@@ -92,16 +88,14 @@ class StatementTest extends TestCase
 
         $item->set('Artist', 'Bob Dylan');
 
-        $statement = new Bego\Update\Statement(
-            'Songs', new Bego\Update\Action($item)
-        );
+        $statement = new Bego\Update\Statement($this->_db, $item);
 
         $subset = [
             'UpdateExpression' => 'SET #Artist = :Artist', 
         ];
 
         $this->assertArraySubset(
-            $subset, $statement->compile($this->_db->marshaler())
+            $subset, $statement->compile()
         );
     }
 
@@ -116,9 +110,7 @@ class StatementTest extends TestCase
         $item->set('Artist', 'Bob Dylan');
         $item->set('Year', 1968);
 
-        $statement = new Bego\Update\Statement(
-            'Songs', new Bego\Update\Action($item)
-        );
+        $statement = new Bego\Update\Statement($this->_db, $item);
 
         $statement->conditions([
             new Component\Condition\Comperator(
@@ -136,7 +128,7 @@ class StatementTest extends TestCase
         ];
 
         $this->assertArraySubset(
-            $subset, $statement->compile($this->_db->marshaler())
+            $subset, $statement->compile()
         );
     }
 
@@ -150,9 +142,7 @@ class StatementTest extends TestCase
 
         $item->set('Artist', 'Bob Dylan');
 
-        $statement = new Bego\Update\Statement(
-            'Songs', new Bego\Update\Action($item)
-        );
+        $statement = new Bego\Update\Statement($this->_db, $item);
         $statement->key(['Id' => $this->_db->marshaler()->marshalValue('1')]);
 
         $subset = [
@@ -160,7 +150,7 @@ class StatementTest extends TestCase
         ];
 
         $this->assertArraySubset(
-            $subset, $statement->compile($this->_db->marshaler())
+            $subset, $statement->compile()
         );
     }
 
@@ -174,16 +164,15 @@ class StatementTest extends TestCase
 
         $item->set('Artist', 'Bob Dylan');
 
-        $statement = new Bego\Update\Statement(
-            'Songs', new Bego\Update\Action($item)
-        );
+        $statement = new Bego\Update\Statement($this->_db, $item);
+        $statement->table('Songs');
 
         $subset = [
             'TableName' => 'Songs', 
         ];
 
         $this->assertArraySubset(
-            $subset, $statement->compile($this->_db->marshaler())
+            $subset, $statement->compile()
         );
     }
 }

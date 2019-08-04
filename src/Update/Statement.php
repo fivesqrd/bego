@@ -5,7 +5,7 @@ namespace Bego\Update;
 
 use Aws\DynamoDb\Exception\DynamoDbException;
 use Bego\Exception as BegoException;
-use Bego\Component;
+use Bego\Component\Member;
 
 class Statement
 {
@@ -17,16 +17,16 @@ class Statement
         'UpdateExpression'          => null,
     ];
 
-    protected $_table;
+    protected $_db;
 
-    protected $_actions;
+    protected $_item;
 
     protected $_conditions = [];
 
-    public function __construct($table, $actions)
+    public function __construct($db, $item)
     {
-        $this->_table = $table;
-        $this->_actions = $actions;
+        $this->_db = $db;
+        $this->_item = $item;
     }
 
     public function option($key, $value)
@@ -36,11 +36,14 @@ class Statement
         return $this;
     }
 
+    public function table($value)
+    {
+        return $this->option('TableName', $value);
+    }
+
     public function key($value)
     {
-        $this->_options['Key'] = $value;
-
-        return $this;
+        return $this->option('Key', $value);
     }
 
     public function conditions($conditions)
@@ -50,43 +53,45 @@ class Statement
         return $this;
     }
 
-    public function compile($marshaler)
+    public function compile()
     {
-        if (!$this->_actions->isDirty()) {
+        if (!$this->_item->isDirty()) {
             throw new BegoException('No update expression values for item');
         }
 
-        $attributes = new AttributeMerge(
-            $this->_actions, $this->_conditions
-        );
-
-        $options = [
-            'TableName'                 => $this->_table,
-            'UpdateExpression'          => $this->_actions->expression(),
-            'ExpressionAttributeNames'  => $attributes->names(),
-            'ExpressionAttributeValues' => $marshaler->marshalJson(
-                json_encode($attributes->values())
-            )
+        $expressions = [
+            new Member\UpdateExpression($this->_item),
+            new Member\ConditionExpression($this->_conditions),
         ];
 
-        if (count($this->_conditions) > 0) {
-            $options['ConditionExpression'] = $this->_getConditionExpression();
+        $attributes = [
+            new Member\AttributeNames($expressions),
+            new Member\AttributeValues($this->_db->marshaler(), $expressions)
+        ];
+
+        foreach (array_merge($expressions, $attributes) as $member) {
+            
+            if (!$member->isDefined()) {
+                continue;
+            }
+            
+            $this->option($member->getParameterKey(), $member->statement()); 
         }
 
-        return array_merge($this->_options, $options);
+        return $this->_options;
     }
 
-    public function execute($client, $marshaler)
+    public function execute()
     {
         try {
 
             /* If nothing changed, do nothing */
-            if (!$this->_actions->isDirty()) {
+            if (!$this->_item->isDirty()) {
                 return null;
             }
 
-            $result = $client->updateItem(
-                $this->compile($marshaler)
+            $result = $this->_db->updateItem(
+                $this->compile($this->_db->marshaler())
             );
 
             $response = $result->get('@metadata');
@@ -98,7 +103,7 @@ class Statement
             }
 
             /* Mark item is clean */
-            $this->_actions->clean();
+            $this->_item->clean();
 
             return true;
 
@@ -110,16 +115,5 @@ class Statement
 
             throw $e;
         }
-    }
-
-    protected function _getConditionExpression()
-    {
-        $statements = [];
-
-        foreach ($this->_conditions as $condition) {
-            $statements[] = $condition->statement();
-        }
-
-        return implode(' and ', $statements);
     }
 }
