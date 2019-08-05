@@ -24,6 +24,17 @@ class ComperatorTest extends TestCase
         );
     }
 
+    public function testEqualsExpressiveStatement()
+    {
+        $comperator = \Bego\Condition::attribute('Year')->eq('1967');
+
+        $placeholder = Component\Condition\Comperator::PREFIX . 'Year';
+
+        $this->assertEquals(
+            "#Year = :{$placeholder}", $comperator->statement()
+        );
+    }
+
     public function testValues()
     {
         $comperator = new Component\Condition\Comperator(

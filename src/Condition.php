@@ -4,12 +4,20 @@ namespace Bego;
 
 use Bego\Component\Condition as CompCondition;
 use Bego\Component\AttributeName;
+use Bego\Component;
 
 /**
  * key condition expression
  */
 class Condition
 {
+    public static function attribute($name)
+    {
+        return new Component\Condition(
+            new AttributeName($name)
+        );
+    }
+
     public static function comperator($attribute, $operator, $value)
     {
         return new CompCondition\Comperator(

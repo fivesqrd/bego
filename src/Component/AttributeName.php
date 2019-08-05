@@ -2,6 +2,8 @@
 
 namespace Bego\Component;
 
+use Bego\Exception as BegoException;
+
 /**
  * key condition expression
  */
@@ -31,6 +33,10 @@ class AttributeName
 
     protected function _sanitise($value)
     {
+        if (empty($value)) {
+            throw new BegoException('Attribute name may not be empty');
+        }
+
         return preg_replace("/[^A-Za-z0-9 ]/", '', $value);
     }
 }

@@ -97,7 +97,7 @@ class StatementTest extends TestCase
             ->table('Test')
             ->partition('TestKey')
             ->key('12345')
-            ->condition(Condition::comperator('Artist', '=', 'John'))
+            ->condition(Condition::attribute('Artist')->eq('John'))
             ->compile();
 
         $subset = [
@@ -120,15 +120,13 @@ class StatementTest extends TestCase
             ->partition('TestKey')
             ->key('12345')
             ->condition(Condition::comperator('Artist', '=', 'John'))
-            ->condition(Condition::comperator('Year', '=', 1966))
             ->compile();
 
         $subset = [
-            'KeyConditionExpression' => '#TestKey = :CmpTestKey and #Artist = :CmpArtist and #Year = :CmpYear', 
+            'KeyConditionExpression' => '#TestKey = :CmpTestKey and #Artist = :CmpArtist', 
             'ExpressionAttributeValues' => [
                 ':CmpTestKey' => ['S' => '12345'],
                 ':CmpArtist' => ['S' => 'John'],
-                ':CmpYear' => ['N' => '1966'],
             ]
         ];
 

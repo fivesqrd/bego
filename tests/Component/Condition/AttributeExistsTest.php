@@ -22,6 +22,15 @@ class AttributeExistsTest extends TestCase
         );
     }
 
+    public function testExpressiveStatement()
+    {
+        $object = \Bego\Condition::attribute('Year')->exists();
+
+        $this->assertEquals(
+            "attribute_exists(#Year)", $object->statement()
+        );
+    }
+
     public function testNames()
     {
         $object = new Component\Condition\AttributeExists(

@@ -7,34 +7,34 @@ use Bego\Component;
 /**
  * @covers \Bego\Query
  */
-class AttributeNotExistsTest extends TestCase
+class BeginsWithTest extends TestCase
 {
     protected $_db;
 
     public function testStatement()
     {
-        $object = new Component\Condition\AttributeNotExists(
-            new Component\AttributeName('Year')
+        $object = new Component\Condition\BeginsWith(
+            new Component\AttributeName('Year'), '19'
         );
 
         $this->assertEquals(
-            "attribute_not_exists(#Year)", $object->statement()
+            "begins_with(#Year, :BwYear)", $object->statement()
         );
     }
 
     public function testExpressiveStatement()
     {
-        $object = \Bego\Condition::attribute('Year')->exists(false);
+        $object = \Bego\Condition::attribute('Year')->beginsWith('19');
 
         $this->assertEquals(
-            "attribute_not_exists(#Year)", $object->statement()
+            "begins_with(#Year, :BwYear)", $object->statement()
         );
     }
 
     public function testNames()
     {
-        $object = new Component\Condition\AttributeNotExists(
-            new Component\AttributeName('Year')
+        $object = new Component\Condition\BeginsWith(
+            new Component\AttributeName('Year'), '19'
         );
 
         $this->assertEquals(

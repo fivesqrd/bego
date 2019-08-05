@@ -2,6 +2,7 @@
 
 namespace Bego\Component\Member;
 
+use Bego\Exception as BegoException;
 use Bego\Component\Condition;
 
 class KeyConditionExpression
@@ -25,6 +26,14 @@ class KeyConditionExpression
 
     public function statement()
     {
+        if (count($this->_conditions) > 2) {
+            throw new BegoException(
+                'Maximum of 2 key condition expressions are allowed'
+            );
+        }
+
+        /* todo: Validate expression as per: https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.html#Query.KeyConditionExpressions */
+
         return Condition::and($this->_conditions);
     }
 

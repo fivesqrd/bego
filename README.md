@@ -61,22 +61,22 @@ You can Query any DynamoDb table or secondary index, provided that it has a comp
 /* Query the table */
 $results = $music->query()
     ->key('Bob Dylan')
-    ->condition(Condition::comperator('SongTitle', '=', 'How many roads'))
-    ->filter(Condition::comperator('Year', '=', '1966'))
+    ->condition(Condition::attribute('SongTitle')->eq('How many roads'))
+    ->filter(Condition::attribute('Year')->eq(1966))
     ->fetch(); 
 
 /* Query a global index */
 $results = $music->query('My-Global-Index')
     ->key('Bob Dylan')
-    ->condition(Condition::comperator('SongTitle', '=', 'How many roads'))
-    ->filter(Condition::comperator('Year', '=', '1966'))
+    ->condition(Condition::attribute('SongTitle')->eq('How many roads'))
+    ->filter(Condition::attribute('Year')->eq(1966))
     ->fetch(); 
 
 /* Query a local index */
 $results = $music->query('My-Local-Index')
     ->key('Bob Dylan')
-    ->condition(Condition::comperator('SongTitle', '=', 'How many roads'))
-    ->filter(Condition::comperator('Year', '=', '1966'))
+    ->condition(Condition::attribute('SongTitle')->eq('How many roads'))
+    ->filter(Condition::attribute('Year')->eq(1966))
     ->fetch(); 
 ```
 
@@ -85,8 +85,8 @@ Multiple key condition / filter expressions can be added. DynamoDb applies key c
 ```
 $results = $music->query()
     ->key('Bob Dylan')
-    ->condition(Condition::beginsWith('SongTitle', 'How'))
-    ->filter(Condition::comperator('Year', '=', '1966'))
+    ->condition(Condition::attribute('SongTitle')->beginsWith('How'))
+    ->filter(Condition::attribute('Year')->in(['1966', '1967']))
     ->fetch(); 
 ```
 
@@ -96,7 +96,7 @@ DynamoDb always sorts results by the sort key value in ascending order. Getting 
 $results = $music->query()
     ->reverse()
     ->key('Bob Dylan')
-    ->condition(Condition::comperator('SongTitle', '=', 'How many roads'))
+    ->condition(Condition::attribute('SongTitle')->eq('How many roads'))
     ->fetch(); 
 ```
 
@@ -106,8 +106,8 @@ To get just some, rather than all of the attributes, use a projection expression
 $results = $music->query()
     ->key('Bob Dylan')
     ->projection(['Year', 'SongTitle'])
-    ->condition(Condition::beginsWith('SongTitle', 'How'))
-    ->filter(Condition::comperator('Year', '=', '1966'))
+    ->condition(Condition::attribute('SongTitle')->beginsWith('How'))
+    ->filter(Condition::attribute('Year')->eq('1966'))
     ->fetch(); 
 ```
 
@@ -117,7 +117,7 @@ The result set object implements the Iterator interface and canned by used strai
 /* Execute query and return first page of results */
 $results = $music->query()
     ->key('Bob Dylan')
-    ->condition(Condition::comperator('SongTitle', '=', 'How many roads'))
+    ->condition(Condition::attribute('SongTitle')->eq('How many roads'))
     ->fetch(); 
 
 foreach ($results as $item) {
@@ -149,7 +149,7 @@ DynamoDb performs eventual consistent reads by default. For strongly consistent 
 ```
 $results = $music->query()
     ->key('Bob Dylan')
-    ->condition(Condition::comperator('SongTitle', '=', 'How many roads'))
+    ->condition(Condition::attribute('SongTitle')->eq('How many roads'))
     ->consistent()
     ->fetch(); 
 ```
@@ -159,7 +159,7 @@ DynamoDb allows you to limit the number of items returned in the result. Note th
 ```
 $results = $music->query()
     ->key('Bob Dylan')
-    ->condition(Condition::comperator('SongTitle', '=', 'How many roads'))
+    ->condition(Condition::attribute('SongTitle')->eq('How many roads'))
     ->limit(100)
     ->fetch();
 ```
@@ -169,7 +169,7 @@ DynanmoDb limits the results to 1MB. Therefor, pagination has to be implemented 
 ```
 $results = $music->query()
     ->key('Bob Dylan')
-    ->condition(Condition::comperator('SongTitle', '=', 'How many roads'));
+    ->condition(Condition::attribute('SongTitle')->eq('How many roads'));
 
 /* Option 1: Get one page orf results only (default) */
 $results = $query->fetch();
@@ -186,7 +186,7 @@ In some cases one may want to paginate accross multiple hops;
 ```
 $results = $music->query()
     ->key('Bob Dylan')
-    ->condition(Condition::comperator('SongTitle', '=', 'How many roads'));
+    ->condition(Condition::attribute('SongTitle')->eq('How many roads'));
 
 /* First Hop: Get one page */
 $results = $query->fetch(1);
@@ -202,7 +202,7 @@ DynamoDb can calculate the total number of read capacity units for every query. 
 ```
 $results = $music->query()
     ->key('Bob Dylan')
-    ->condition(Condition::comperator('SongTitle', '=', 'How many roads'))
+    ->condition(Condition::attribute('SongTitle')->eq('How many roads'))
     ->consumption()
     ->fetch();
 
@@ -224,7 +224,7 @@ $results = $table->scan()
 ```
 /* Scan the secondary index */
 $results = $table->scan('My-Global-Index')
-    ->filter(Condition::comperator('Year', '=', '1966'))
+    ->filter(Condition::attribute('Year')->eq(1966))
     ->fetch();
 ```
 
@@ -293,8 +293,8 @@ $result = $music->update($item);
 
 $results = $music->query()
     ->key('Bob Dylan')
-    ->condition(Condition::comperator('SongTitle', '=', 'How many roads'))
-    ->filter(Condition::comperator('Year', '=', '1966'))
+    ->condition(Condition::attribute('SongTitle')->eq('How many roads'))
+    ->filter(Condition::attribute('Year')->eq(1966))
     ->fetch(); 
 
 foreach ($results as $item) {
@@ -312,8 +312,8 @@ $result = $music->update($item);
 
 $results = $music->query()
     ->key('Bob Dylan')
-    ->condition(Condition::comperator('SongTitle', '=', 'How many roads'))
-    ->filter(Condition::comperator('Year', '=', '1966'))
+    ->condition(Condition::attribute('SongTitle')->eq('How many roads'))
+    ->filter(Condition::attribute('Year')->eq(1966))
     ->fetch(); 
 
 foreach ($results as $item) {
@@ -328,10 +328,10 @@ foreach ($results as $item) {
 use Bego\Condition;
 
 $conditions = [
-    Condition::beginsWith('Year', '19'),
-    Condition::attributeExists('Year'),
-    Condition::comperator('Year', '=', '1966'),
-    Condition::in('Year', ['1966', '1967']),
+    Condition::attribute('Year')->beginsWith('19')
+    Condition::attribute('Year')->exists()
+    Condition::attribute('Year')->eq(1966)
+    Condition::attribute('Year')->in([1966, 1967])
 ];
 
 $result = $music->update($item, $conditions);
