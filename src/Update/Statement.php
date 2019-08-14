@@ -90,7 +90,7 @@ class Statement
                 return null;
             }
 
-            $result = $this->_db->updateItem($this->compile());
+            $result = $this->_db->client()->updateItem($this->compile());
 
             $response = $result->get('@metadata');
 

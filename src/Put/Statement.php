@@ -73,7 +73,7 @@ class Statement
     {
         try {
 
-            $result = $this->_db->putItem($this->compile());
+            $result = $this->_db->client()->putItem($this->compile());
 
             $response = $result->get('@metadata');
 
