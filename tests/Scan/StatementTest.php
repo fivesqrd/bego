@@ -67,4 +67,16 @@ class StatementTest extends TestCase
 
         $this->assertArraySubset($subset, $statement);
     }
+
+    public function testProjectionMatches()
+    {
+        $statement = $this->_scan
+            ->table('Test')
+            ->projection(['TestKey', 'Artist'])
+            ->compile();
+
+        $this->assertArraySubset(
+            ['ProjectionExpression' => '#TestKey, #Artist'], $statement
+        );
+    }
 }

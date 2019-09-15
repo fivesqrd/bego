@@ -14,6 +14,8 @@ class Statement
 
     protected $_partition;
 
+    protected $_projection = [];
+
     protected $_filters = [];
 
     protected $_db;
@@ -74,14 +76,35 @@ class Statement
         return $this;
     }
 
-    public function compile()
+    /**
+     * Accept an array of attribute names in ProjectionExpression
+     * @param array $attributeNames
+     * @return Statement
+     */
+    public function projection($values)
     {
-        if (empty($this->_filters)) {
-            return $this->_options;
+        if (is_string($values)) {
+            $values = [$values];
         }
 
+        if (!is_array($values)) {
+            throw new BegoException(
+                'Projection values are expected to by of type array'
+            );
+        }
+
+        foreach ($values as $value) {
+            $this->_projection[] = new Component\AttributeName($value);
+        }
+
+        return $this;
+    }
+
+    public function compile()
+    {
         $expressions = [
             new Member\FilterExpression($this->_filters),
+            new Member\ProjectionExpression($this->_projection),
         ];
 
         $attributes = [

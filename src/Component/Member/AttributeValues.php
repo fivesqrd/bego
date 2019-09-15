@@ -16,13 +16,7 @@ class AttributeValues
 
     public function isDefined()
     {
-        foreach ($this->_expressions as $expression) {
-            if ($expression->isDefined()) {
-                return true;
-            }
-        }
-
-        return false;
+        return count($this->_getAggregatedValues()) > 0;
     }
 
     public function getParameterKey()
@@ -31,6 +25,13 @@ class AttributeValues
     }
 
     public function statement()
+    {
+        return $this->_marshaler->marshalJson(
+            json_encode($this->_getAggregatedValues())
+        );
+    }
+
+    protected function _getAggregatedValues()
     {
         $values = [];
 
@@ -47,8 +48,6 @@ class AttributeValues
             $values = array_merge($values, $expression->values());
         }
 
-        return $this->_marshaler->marshalJson(
-            json_encode($values)
-        );
+        return $values;
     }
 }
