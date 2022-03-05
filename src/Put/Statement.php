@@ -78,7 +78,7 @@ class Statement
             $response = $result->get('@metadata');
 
             if ($response['statusCode'] != 200) {
-                throw new Exception(
+                throw new BegoException(
                     "DynamoDb returned unsuccessful response code: {$response['statusCode']}"
                 );
             }

@@ -238,6 +238,26 @@ $item = $music->put([
 ]);
 ```
 
+```
+/* Create multiple items with batch writing */
+$item = $music->putBatch(
+   [
+       'Id'          => uniqid(),
+       'Artist'     => 'Neil Diamond',
+       'SongTitle'  => 'Red, red wine',
+       'Year'       => 1968,
+       'Time'       => date('Y-m-d H:i:s')
+   ],
+   [
+       'Id'          => uniqid(),
+       'Artist'     => 'Bob Marley',
+       'SongTitle'  => 'Buffalo Soldier',
+       'Year'       => 1984,
+       'Time'       => date('Y-m-d H:i:s')
+   ]
+);
+```
+
 ## Get an item ##
 ```
 /* Fetch an item */
@@ -346,6 +366,10 @@ if ($result) {
 $music->delete($item);
 ```
 
+/* Delete multiple items with batch writing */
+```
+$response = $table->deleteBatch($items, 5);
+```
 ## Creating a table (experimental) ##
 ```
 $spec = [

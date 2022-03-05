@@ -54,6 +54,17 @@ class Table
         return new Item($attributes);
     }
 
+    public function putBatch($items, $retries = 0)
+    {
+        $statement = new Batch\WriteStatement($this->_db);
+
+        foreach ($items as $itemAttributes) {
+            $statement->put($this->_model->name(), $itemAttributes);
+        }
+
+        return $statement->execute($retries);
+    }
+
     public function update($item, $conditions = [])
     {
         return (new Update\Statement($this->_db, $item))
@@ -76,6 +87,19 @@ class Table
         return $this->_isResponseValid(
             $result->get('@metadata'), 200
         );
+    }
+
+    public function deleteBatch($items, $retries = 0)
+    {
+        $statement = new Batch\WriteStatement($this->_db);
+
+        foreach ($items as $item) {
+            $key = $this->_getKeyFromItem($this->_model, $item);
+            print_r($key);
+            $statement->delete($this->_model->name(), $key);
+        }
+
+        return $statement->execute($retries);
     }
 
     public function query($index = null)
