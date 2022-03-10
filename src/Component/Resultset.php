@@ -161,10 +161,12 @@ class Resultset implements \Iterator, \Countable
     }
 
     /**
-     * Return the items as an array
+     * Return the collection as an array of items
      */
     public function toArray()
     {
-        return $this->_result['Items'];
+        return array_map(function ($item) {
+            return $this->_marshaler->unmarshalItem($item);
+        }, $this->_result['Items']);
     }
 }
