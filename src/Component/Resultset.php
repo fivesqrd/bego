@@ -159,4 +159,12 @@ class Resultset implements \Iterator, \Countable
     {
         return $this->param('LastEvaluatedKey', false);
     }
+
+    /**
+     * Return the items as an array
+     */
+    public function toArray()
+    {
+        return $this->_result['Items'];
+    }
 }
