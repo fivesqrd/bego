@@ -2,6 +2,8 @@
 
 namespace Bego;
 
+use Bego\Component\Resultset;
+
 class Table
 {
     protected $_db;
@@ -95,11 +97,18 @@ class Table
 
         foreach ($items as $item) {
             $key = $this->_getKeyFromItem($this->_model, $item);
-            print_r($key);
             $statement->delete($this->_model->name(), $key);
         }
 
         return $statement->execute($retries);
+    }
+
+    public function deleteResultset(Resultset $resultset, $retries = 0)
+    {
+        // Split the result into chunks of 25
+        foreach ($resultset->chunk(25) as $items) {
+            $this->deleteBatch($items, $retries);
+        }
     }
 
     public function query($index = null)

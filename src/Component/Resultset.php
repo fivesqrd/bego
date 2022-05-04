@@ -4,7 +4,7 @@ namespace Bego\Component;
 
 use Bego\Item;
 
-class Resultset implements \Iterator, \Countable
+class Resultset implements \Iterator, \Countable, \ArrayAccess
 {
     protected $_pointer;
 
@@ -62,6 +62,30 @@ class Resultset implements \Iterator, \Countable
     public function count()
     {
         return count($this->_result['Items']);
+    }
+
+    public function offsetSet($offset, $value) 
+    {
+        if (is_null($offset)) {
+            $this->_result['Items'][] = $value;
+        } else {
+            $this->_result['Items'][$offset] = $value;
+        }
+    }
+
+    public function offsetExists($offset) 
+    {
+        return isset($this->_result['Items'][$offset]);
+    }
+
+    public function offsetUnset($offset) 
+    {
+        unset($this->_result['Items'][$offset]);
+    }
+
+    public function offsetGet($offset) 
+    {
+        return isset($this->_result['Items'][$offset]) ? $this->_result['Items'][$offset] : null;
     }
 
     /**
@@ -168,5 +192,20 @@ class Resultset implements \Iterator, \Countable
         return array_map(function ($item) {
             return $this->_marshaler->unmarshalItem($item);
         }, $this->_result['Items']);
+    }
+
+    /**
+     * Return the collection as an array of items objects
+     */
+    public function toArrayOfObjects()
+    {
+        return array_map(function ($item) {
+            return new Item($this->_marshaler->unmarshalItem($item));
+        }, $this->_result['Items']);
+    }
+
+    public function chunk($length)
+    {
+        return array_chunk($this->toArrayOfObjects(), $length);
     }
 }
