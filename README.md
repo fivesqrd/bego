@@ -238,6 +238,7 @@ $item = $music->put([
 ]);
 ```
 
+Batch writing will automatically deal with a) DynamoDb's batch size limits, b) efficiency, i.e. running multiple workers in parallel, c) handling unresolved items and d) retrying any errors due to provision limits
 ```
 /* Create multiple items with batch writing */
 $item = $music->putBatch(
@@ -368,7 +369,7 @@ $music->delete($item);
 
 /* Delete multiple items with batch writing */
 ```
-$response = $table->deleteBatch($items, 5);
+$response = $table->deleteBatch($items);
 ```
 ## Creating a table (experimental) ##
 ```

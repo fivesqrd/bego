@@ -56,15 +56,24 @@ class Table
         return new Item($attributes);
     }
 
-    public function putBatch($items, $retries = 0)
+    /**
+     * Perform a batch put write. If you are sending batches of large
+     * items, you may consider lowering the batch size, otherwise, you should use 25.
+     * @param array $items
+     * @param int $retries
+     * @return bool
+     * @throws \Aws\DynamoDb\Exception\AwsException
+     */
+    public function putBatch(array $items, $workers = 1, $limit = 25)
     {
-        $statement = new Batch\WriteStatement($this->_db);
+        $wrapper = Batch\WriteWrapper::make(
+            $this->_db, $this->_model->name(), $workers, $limit
+        );
+        
+        $wrapper->putMany($items);
+        $wrapper->flush();
 
-        foreach ($items as $itemAttributes) {
-            $statement->put($this->_model->name(), $itemAttributes);
-        }
-
-        return $statement->execute($retries);
+        return true;
     }
 
     public function update($item, $conditions = [])
@@ -91,24 +100,32 @@ class Table
         );
     }
 
-    public function deleteBatch($items, $retries = 0)
+    /**
+     * Perform a batch delete write. If you are sending batches of large
+     * items, you may consider lowering the batch size, otherwise, you should use 25.
+     * @param array $items
+     * @param int $retries
+     * @return bool
+     * @throws \Aws\DynamoDb\Exception\AwsException
+     */
+    public function deleteBatch(array $items, $workers = 1, $limit = 25)
     {
-        $statement = new Batch\WriteStatement($this->_db);
-
+        $wrapper = Batch\WriteWrapper::make(
+            $this->_db, $this->_model->name(), $workers, $limit
+        );
+        
         foreach ($items as $item) {
-            $key = $this->_getKeyFromItem($this->_model, $item);
-            $statement->delete($this->_model->name(), $key);
+            $wrapper->delete($this->_getKeyFromItem($this->_model, $item));
         }
 
-        return $statement->execute($retries);
+        $wrapper->flush();
+
+        return true;
     }
 
-    public function deleteResultset(Resultset $resultset, $retries = 0)
+    public function deleteResultset(Resultset $resultset)
     {
-        // Split the result into chunks of 25
-        foreach ($resultset->chunk(25) as $items) {
-            $this->deleteBatch($items, $retries);
-        }
+        $this->deleteBatch($resultset->toArrayOfObjects());
     }
 
     public function query($index = null)
