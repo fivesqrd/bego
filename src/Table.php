@@ -56,26 +56,6 @@ class Table
         return new Item($attributes);
     }
 
-    /**
-     * Perform a batch put write. If you are sending batches of large
-     * items, you may consider lowering the batch size, otherwise, you should use 25.
-     * @param array $items
-     * @param int $retries
-     * @return bool
-     * @throws \Aws\DynamoDb\Exception\AwsException
-     */
-    public function putBatch(array $items, $workers = 1, $limit = 25)
-    {
-        $wrapper = Batch\WriteWrapper::make(
-            $this->_db, $this->_model->name(), $workers, $limit
-        );
-        
-        $wrapper->putMany($items);
-        $wrapper->flush();
-
-        return true;
-    }
-
     public function update($item, $conditions = [])
     {
         return (new Update\Statement($this->_db, $item))
@@ -101,12 +81,33 @@ class Table
     }
 
     /**
-     * Perform a batch delete write. If you are sending batches of large
+     * Perform a batch put write. If you are sending batches of large
      * items, you may consider lowering the batch size, otherwise, you should use 25.
      * @param array $items
-     * @param int $retries
+     * @param int $workers
+     * @param int $limit
      * @return bool
-     * @throws \Aws\DynamoDb\Exception\AwsException
+     * @throws \Aws\DynamoDb\Exception\DynamoDbException
+     */
+    public function putBatch(array $items, $workers = 1, $limit = 25)
+    {
+        $wrapper = Batch\WriteWrapper::make(
+            $this->_db, $this->_model->name(), $workers, $limit
+        );
+        
+        $wrapper->putMany($items);
+        $wrapper->flush();
+
+        return true;
+    }
+
+    /**
+     * Perform a batch delete write.
+     * @param array $items
+     * @param int $workers
+     * @param int $limit
+     * @return bool
+     * @throws \Aws\DynamoDb\Exception\DynamoDbException
      */
     public function deleteBatch(array $items, $workers = 1, $limit = 25)
     {
